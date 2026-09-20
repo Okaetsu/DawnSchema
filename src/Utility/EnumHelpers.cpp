@@ -13,7 +13,7 @@ namespace PS::EnumHelpers {
         auto enumName = enum_->GetName();
         if (!enumStringFixed.contains("::"))
         {
-            enumStringFixed = std::format("{}::{}", RC::to_string(enumName), enumStringFixed);
+            enumStringFixed = fmt::format("{}::{}", RC::to_string(enumName), enumStringFixed);
         }
 
         auto enumKey = RC::to_generic_string(enumStringFixed);

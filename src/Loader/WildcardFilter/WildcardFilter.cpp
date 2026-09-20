@@ -33,7 +33,7 @@ namespace PS {
         if (operationValue == EWildcardOperationType::Unknown)
         {
             throw std::runtime_error(
-                std::format("Failed to parse wildcard filter, property 'Operation' was supplied an invalid value of {}.", operationString));
+                fmt::format("Failed to parse wildcard filter, property 'Operation' was supplied an invalid value of {}.", operationString));
         }
 
         m_operationType = operationValue;

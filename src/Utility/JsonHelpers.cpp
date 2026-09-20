@@ -21,7 +21,7 @@ namespace PS::JsonHelpers {
     {
         if (!data.contains(fieldName))
         {
-            throw std::runtime_error(std::format("Missing a required field of '{}'.", fieldName));
+            throw std::runtime_error(fmt::format("Missing a required field of '{}'.", fieldName));
         }
     }
 
@@ -51,7 +51,7 @@ namespace PS::JsonHelpers {
 
         if (!field.is_object() || !field.contains("Pitch") || !field.contains("Yaw") || !field.contains("Roll"))
         {
-            throw std::runtime_error(std::format("FRotator '{}' must be an object with fields 'Pitch', 'Yaw' and 'Roll'.", fieldName));
+            throw std::runtime_error(fmt::format("FRotator '{}' must be an object with fields 'Pitch', 'Yaw' and 'Roll'.", fieldName));
         }
 
         double pitch, yaw, roll;
@@ -68,7 +68,7 @@ namespace PS::JsonHelpers {
 
         if (!field.is_object() || !field.contains("X") || !field.contains("Y") || !field.contains("Z"))
         {
-            throw std::runtime_error(std::format("FVector '{}' must be an object with fields 'X', 'Y' and 'Z'.", fieldName));
+            throw std::runtime_error(fmt::format("FVector '{}' must be an object with fields 'X', 'Y' and 'Z'.", fieldName));
         }
 
         double x, y, z;
@@ -95,7 +95,7 @@ namespace PS::JsonHelpers {
 
         if (!field.is_number_float())
         {
-            throw std::runtime_error(std::format("Value '{}' must be a floating point number.", fieldName));
+            throw std::runtime_error(fmt::format("Value '{}' must be a floating point number.", fieldName));
         }
 
         outValue = field.get<double>();
@@ -107,7 +107,7 @@ namespace PS::JsonHelpers {
 
         if (!field.is_number_integer())
         {
-            throw std::runtime_error(std::format("Value '{}' must be an integer.", fieldName));
+            throw std::runtime_error(fmt::format("Value '{}' must be an integer.", fieldName));
         }
 
         outValue = field.get<int>();
@@ -119,7 +119,7 @@ namespace PS::JsonHelpers {
 
         if (!field.is_number_integer())
         {
-            throw std::runtime_error(std::format("Value '{}' must be an integer.", fieldName));
+            throw std::runtime_error(fmt::format("Value '{}' must be an integer.", fieldName));
         }
 
         outValue = field.get<RC::Unreal::uint8>();
@@ -131,7 +131,7 @@ namespace PS::JsonHelpers {
 
         if (!field.is_string())
         {
-            throw std::runtime_error(std::format("Value '{}' must be a string.", fieldName));
+            throw std::runtime_error(fmt::format("Value '{}' must be a string.", fieldName));
         }
 
         outValue = field.get<std::string>();
@@ -175,7 +175,7 @@ namespace PS::JsonHelpers {
             }
             catch (const std::exception& e)
             {
-                throw std::runtime_error(std::format("Failed parsing mod file {} - {}.\n", file.path().string(), e.what()));
+                throw std::runtime_error(fmt::format("Failed parsing mod file {} - {}.\n", file.path().string(), e.what()));
             }
         }
     }

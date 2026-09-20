@@ -185,7 +185,7 @@ namespace Palworld {
 
         if (!Title.ends_with("\r\n\r\n"))
         {
-            Title = std::format("{}\r\n\r\n", Title);
+            Title = fmt::format("{}\r\n\r\n", Title);
         }
 
 		auto TableRow = m_helpGuideDescTextTable->FindRowUnchecked(NoteId);
@@ -197,7 +197,7 @@ namespace Palworld {
             if (TextDataProperty)
             {
                 auto TextData = TextDataProperty->ContainerPtrToValuePtr<FText>(TableRow);
-                auto FinalDescription = std::format("{}{}", Title, Description);
+                auto FinalDescription = fmt::format("{}{}", Title, Description);
                 auto FinalDescriptionWide = RC::to_generic_string(FinalDescription);
                 *TextData = FText(FinalDescriptionWide.c_str());
             }
@@ -210,7 +210,7 @@ namespace Palworld {
             if (TextDataProperty)
             {
                 auto TextData = TextDataProperty->ContainerPtrToValuePtr<FText>(RowData.GetData());
-                auto FinalDescription = std::format("{}{}", Title, Description);
+                auto FinalDescription = fmt::format("{}{}", Title, Description);
                 auto FinalDescriptionWide = RC::to_generic_string(FinalDescription);
                 *TextData = FText(FinalDescriptionWide.c_str());
             }

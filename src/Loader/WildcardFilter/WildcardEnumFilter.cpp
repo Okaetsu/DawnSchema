@@ -85,7 +85,7 @@ namespace PS {
             UPalEnum* palEnum = palEnumProp->GetPalEnum();
 
             RC::StringType nameSpace = palEnum->GetName();
-            RC::StringType enumName = std::format(TEXT("{}::{}"), nameSpace, enumString);
+            RC::StringType enumName = fmt::format(TEXT("{}::{}"), nameSpace, enumString);
 
             for (const FEnumNamePair& enumNamePair : palEnum->GetEnumNames())
             {

@@ -136,12 +136,12 @@ namespace Palworld {
 		}
 		else
 		{
-			throw std::runtime_error(std::format("Unsupported skin type '{}'", Type));
+			throw std::runtime_error(fmt::format("Unsupported skin type '{}'", Type));
 		}
 
         if (!DatabaseClass)
         {
-            throw std::runtime_error(std::format("Failed to set Database Class for '{}'", Type));
+            throw std::runtime_error(fmt::format("Failed to set Database Class for '{}'", Type));
         }
         
         auto SkinNameProperty = PropertyHelper::GetPropertyByName<FNameProperty>(DatabaseClass, STR("SkinName"));
@@ -203,7 +203,7 @@ namespace Palworld {
         auto SkinClass = Item->GetClassPrivate();
         if (!SkinClass)
         {
-            throw std::runtime_error(std::format("Skin Class for {} was invalid", RC::to_string(SkinId.ToString())));
+            throw std::runtime_error(fmt::format("Skin Class for {} was invalid", RC::to_string(SkinId.ToString())));
         }
 
         for (auto& [Key, Value] : Data.items())
@@ -244,7 +244,7 @@ namespace Palworld {
 
 	void PalSkinModLoader::AddTranslation(const RC::Unreal::FName& SkinId, const nlohmann::json& Data)
 	{
-		auto FixedSkinId = std::format(STR("SKIN_NAME_{}"), SkinId.ToString());
+		auto FixedSkinId = fmt::format(STR("SKIN_NAME_{}"), SkinId.ToString());
 		auto TranslationRowStruct = m_skinTranslationTable->GetRowStruct().Get();
 
         auto TextProperty = PropertyHelper::GetPropertyByName(TranslationRowStruct, STR("TextData"));
@@ -266,7 +266,7 @@ namespace Palworld {
 
 	void PalSkinModLoader::EditTranslation(const RC::Unreal::FName& SkinId, const nlohmann::json& Data)
 	{
-		auto FixedSkinId = std::format(STR("SKIN_NAME_{}"), SkinId.ToString());
+		auto FixedSkinId = fmt::format(STR("SKIN_NAME_{}"), SkinId.ToString());
 		auto TranslationRowStruct = m_skinTranslationTable->GetRowStruct().Get();
 
         auto TextProperty = PropertyHelper::GetPropertyByName(TranslationRowStruct, STR("TextData"));
@@ -291,7 +291,7 @@ namespace Palworld {
 		auto NewSkinDataBaseClass = UECustom::UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, Path.c_str());
 		if (!NewSkinDataBaseClass)
 		{
-			throw std::runtime_error(std::format("Failed to cache PalSkinDataBaseClass, '{}' doesn't exist", RC::to_string(Path)));
+			throw std::runtime_error(fmt::format("Failed to cache PalSkinDataBaseClass, '{}' doesn't exist", RC::to_string(Path)));
 		}
 
 		return NewSkinDataBaseClass;

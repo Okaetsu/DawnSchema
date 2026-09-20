@@ -34,7 +34,22 @@ file(GLOB SRC_FILES CONFIGURE_DEPENDS
 )
 
 add_library(${TARGET} SHARED ${SRC_FILES} version.rc)
+target_compile_definitions(${TARGET} PRIVATE HAS_GUI)
 target_include_directories(${TARGET} PRIVATE 
     include/
 )
 target_link_libraries(${TARGET} PRIVATE Zydis Zycore safetyhook nlohmann_json::nlohmann_json glaze::glaze UE4SS efsw)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(${TARGET} PRIVATE -Wno-changes-meaning -Wno-template-body)
+endif()
+
+
+# PalSchema portable Linux runtime path
+if(UNIX AND NOT APPLE)
+    set_target_properties(${TARGET} PROPERTIES
+        BUILD_RPATH "\$ORIGIN/../../.."
+        INSTALL_RPATH "\$ORIGIN/../../.."
+        BUILD_RPATH_USE_ORIGIN TRUE
+        INSTALL_RPATH_USE_LINK_PATH FALSE
+    )
+endif()

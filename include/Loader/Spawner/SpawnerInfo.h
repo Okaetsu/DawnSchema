@@ -9,6 +9,7 @@
 
 namespace RC::Unreal {
     class UWorld;
+    class AActor;
 }
 
 namespace UECustom {

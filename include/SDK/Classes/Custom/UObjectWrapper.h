@@ -11,7 +11,7 @@ namespace UECustom {
         void* GetValuePtrByPropertyNameInChain(const RC::Unreal::TCHAR* PropertyName);
 
         template<RC::Unreal::UObjectPointerDerivativeOrAnyNonUObject ReturnType>
-        ReturnType* GetValuePtrByPropertyNameInChain(const TCHAR* PropertyName)
+        ReturnType* GetValuePtrByPropertyNameInChain(const RC::Unreal::TCHAR* PropertyName)
         {
             return static_cast<ReturnType*>(UObjectWrapper::GetValuePtrByPropertyNameInChain(PropertyName));
         }

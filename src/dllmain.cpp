@@ -1,3 +1,4 @@
+#include <UE4SS/mod_api.h>
 #include "Mod/CppUserModBase.hpp"
 #include "UE4SSProgram.hpp"
 #include "Loader/PalMainLoader.h"
@@ -17,12 +18,16 @@ class PalSchema : public RC::CppUserModBase
 public:
     PalSchema() : CppUserModBase()
     {
-        auto Version = std::format(STR("{}.{}.{}"), VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
+        RC::StringType Version = STR("0.6.71");
 
         ModName = STR("PalSchema");
+
         ModVersion = Version;
+
         ModDescription = STR("Allows modifying of Palworld's assets dynamically.");
+
         ModAuthors = STR("Okaetsu");
+
 
         if (!has_member_variable_layout())
         {
@@ -52,10 +57,11 @@ public:
     auto has_member_variable_layout() -> bool
     {
         namespace fs = std::filesystem;
-        auto MemberVariableLayoutFile = fs::path(UE4SSProgram::get_program().get_working_directory()) / "MemberVariableLayout.ini";
+        auto MemberVariableLayoutFile = fs::path(RC::UE4SSProgram::get_program().get_working_directory()) / "MemberVariableLayout.ini";
         return fs::exists(MemberVariableLayoutFile);
     }
 
+#ifdef _WIN32
     auto render_schema_generator()
     {
         static bool bGeneratingSchemas = false;
@@ -95,6 +101,8 @@ public:
         PS::Log<LogLevel::Verbose>(STR("Finished registering Pal Schema tab for GUI Console.\n"));
     }
 
+#endif
+
     auto on_update() -> void override
     {
     }
@@ -112,12 +120,13 @@ private:
 };
 
 
-#define PALSCHEMA_API __declspec(dllexport)
+#define PALSCHEMA_API UE4SS_MOD_API
 extern "C"
 {
     PALSCHEMA_API RC::CppUserModBase* start_mod()
     {
-        return new PalSchema();
+        auto* mod = new PalSchema();
+        return mod;
     }
 
     PALSCHEMA_API void uninstall_mod(RC::CppUserModBase* mod)

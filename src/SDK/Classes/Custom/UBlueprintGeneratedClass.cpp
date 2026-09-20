@@ -27,7 +27,7 @@ namespace UECustom {
         {
             auto staticClass = StaticClass();
             auto fnAddress = Palworld::GetVirtualFunctionFromClass(staticClass, 120);
-            fn = static_cast<FnSignature>(fnAddress);
+            fn = reinterpret_cast<FnSignature>(fnAddress);
         }
 
         if (!fn)

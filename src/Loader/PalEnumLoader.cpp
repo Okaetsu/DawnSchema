@@ -73,26 +73,26 @@ namespace Palworld {
             auto enumNamespaceWide = RC::to_generic_string(enumNamespace);
             if (!enumValues.is_array())
             {
-                throw std::runtime_error(std::format("Values in {} must be arrays of strings", enumNamespace));
+                throw std::runtime_error(fmt::format("Values in {} must be arrays of strings", enumNamespace));
             }
 
             auto enumObject = GetEnumByName(enumNamespaceWide);
             if (!enumObject) {
-                throw std::runtime_error(std::format("Enum object {} was invalid.", enumNamespace));
+                throw std::runtime_error(fmt::format("Enum object {} was invalid.", enumNamespace));
             }
 
             for (auto& enumValue : enumValues)
             {
-                if (!enumValue.is_string()) throw std::runtime_error(std::format("Array must only contain strings"));
+                if (!enumValue.is_string()) throw std::runtime_error(fmt::format("Array must only contain strings"));
 
                 auto enumValueString = enumValue.get<std::string>();
                 if (enumValueString.find(':') != std::string::npos) {
                     throw std::runtime_error(
-                        std::format("Enum value '{}' must not contain the namespace. Example: Write ExampleEnum instead of {}::ExampleEnum",
+                        fmt::format("Enum value '{}' must not contain the namespace. Example: Write ExampleEnum instead of {}::ExampleEnum",
                             enumValueString, enumNamespace));
                 }
 
-                auto enumValueStringWide = std::format(STR("{}::{}"), enumNamespaceWide, RC::to_generic_string(enumValueString));
+                auto enumValueStringWide = fmt::format(STR("{}::{}"), enumNamespaceWide, RC::to_generic_string(enumValueString));
 
                 auto enumName = FName(enumValueStringWide, FNAME_Add);
                 int32 indexToInsertAt = enumObject->NumEnums() - 1;
@@ -104,7 +104,7 @@ namespace Palworld {
                 auto ResultIndex = enumObject->InsertIntoNames(enumNamePair, indexToInsertAt, true);
                 if (ResultIndex < 0)
                 {
-                    throw std::runtime_error(std::format("Something went wrong adding the enum {}", enumValueString));
+                    throw std::runtime_error(fmt::format("Something went wrong adding the enum {}", enumValueString));
                 }
 
                 PS::Log<LogLevel::Normal>(STR("Enum value {} has been added to {}.\n"), enumValueStringWide, enumNamespaceWide);

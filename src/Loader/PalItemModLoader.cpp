@@ -22,6 +22,15 @@
 using namespace RC;
 using namespace RC::Unreal;
 
+static inline void* PS_ReturnAddress()
+{
+#ifdef _MSC_VER
+    return _ReturnAddress();
+#else
+    return __builtin_return_address(0);
+#endif
+}
+
 namespace Palworld {
 	PalItemModLoader::PalItemModLoader() : PalModLoaderBase("items") {
         SetDisplayName(TEXT("Item Loader"));
@@ -119,7 +128,7 @@ namespace Palworld {
         FString Type;
         if (!PS::JsonHelpers::GetString(Data, "Type", Type))
         {
-            throw std::runtime_error(std::format("You must supply a Type field in '{}' and it must be a string when adding new items",
+            throw std::runtime_error(fmt::format("You must supply a Type field in '{}' and it must be a string when adding new items",
                 RC::to_string(ItemId.ToString())));
         }
 
@@ -305,7 +314,7 @@ namespace Palworld {
 		auto RecipeRow = m_itemRecipeTable->FindRowUnchecked(ItemId);
 		if (!RecipeRow)
 		{
-			throw std::runtime_error(std::format("Row for Recipe '{}' doesn't exist", RC::to_string(ItemId.ToString())));
+			throw std::runtime_error(fmt::format("Row for Recipe '{}' doesn't exist", RC::to_string(ItemId.ToString())));
 		}
 
 		for (auto& [Key, Value] : Recipe.items())
@@ -335,7 +344,7 @@ namespace Palworld {
 	{
 		if (Data.contains("Name"))
 		{
-			auto RowId = std::format(TEXT("ITEM_NAME_{}"), ItemId.ToString());
+			auto RowId = fmt::format(TEXT("ITEM_NAME_{}"), ItemId.ToString());
 			auto RowStruct = m_nameTranslationTable->GetRowStruct().Get();
 			auto TextDataProperty = RowStruct->GetPropertyByName(TEXT("TextData"));
             if (TextDataProperty)
@@ -359,7 +368,7 @@ namespace Palworld {
 
 		if (Data.contains("Description"))
 		{
-			auto RowId = std::format(TEXT("ITEM_DESC_{}"), ItemId.ToString());
+			auto RowId = fmt::format(TEXT("ITEM_DESC_{}"), ItemId.ToString());
             auto RowStruct = m_descriptionTranslationTable->GetRowStruct().Get();
             auto TextDataProperty = RowStruct->GetPropertyByName(TEXT("TextData"));
             if (TextDataProperty)
@@ -386,7 +395,7 @@ namespace Palworld {
 	{
 		if (Data.contains("Name"))
 		{
-			auto RowId = std::format(TEXT("ITEM_NAME_{}"), ItemId.ToString());
+			auto RowId = fmt::format(TEXT("ITEM_NAME_{}"), ItemId.ToString());
 			auto RowStruct = m_nameTranslationTable->GetRowStruct().Get();
 			auto TextDataProperty = RowStruct->GetPropertyByName(TEXT("TextData"));
 			if (TextDataProperty)
@@ -401,7 +410,7 @@ namespace Palworld {
 
 		if (Data.contains("Description"))
 		{
-			auto RowId = std::format(TEXT("ITEM_DESC_{}"), ItemId.ToString());
+			auto RowId = fmt::format(TEXT("ITEM_DESC_{}"), ItemId.ToString());
 			auto RowStruct = m_nameTranslationTable->GetRowStruct().Get();
 			auto TextDataProperty = RowStruct->GetPropertyByName(TEXT("TextData"));
 			if (TextDataProperty)
@@ -563,7 +572,7 @@ namespace Palworld {
 
     void PalItemModLoader::UpdateItem_Detour(RC::Unreal::UObject* self, FPalItemId* ItemId, int amount, bool param4, bool param5)
     {
-        if (_ReturnAddress() == ApplyItemSaveDataAddress && !IsValidItem(self, ItemId->StaticId))
+        if (PS_ReturnAddress() == ApplyItemSaveDataAddress && !IsValidItem(self, ItemId->StaticId))
         {
             PS::Log<LogLevel::Warning>(TEXT("Item '{}' is invalid. Deleting.\n"), ItemId->StaticId.ToString());
             ItemId->StaticId = NAME_None;
@@ -575,7 +584,7 @@ namespace Palworld {
 
     UPalDynamicItemDataBase* PalItemModLoader::CreateDynamicItemDatabase_Detour(RC::Unreal::UObject* self, FPalDynamicItemId* dynamicItemId, RC::Unreal::FName staticId, void* itemCreateParam)
     {
-        if (_ReturnAddress() == ApplyDynamicItemSaveDataAddress && !IsValidItem(self, staticId))
+        if (PS_ReturnAddress() == ApplyDynamicItemSaveDataAddress && !IsValidItem(self, staticId))
         {
             PS::Log<LogLevel::Warning>(TEXT("Item '{}' is invalid. Dynamic Data for this item will be deleted on next save.\n"), staticId.ToString());
 
@@ -609,7 +618,7 @@ namespace Palworld {
         * This fixes crashing related to craft item counts in UPalUserAchievementChecker::CheckCraftCount for custom items that were uninstalled-
         * but still exist in the save.
         */
-        if (_ReturnAddress() == CraftItemCount_ApplyDataMapReturnAddress)
+        if (PS_ReturnAddress() == CraftItemCount_ApplyDataMapReturnAddress)
         {
             RC::Unreal::TMap<RC::Unreal::FName, RC::Unreal::int32> NewMap;
             for (auto& [StaticItemId, Count] : MapToApply)
