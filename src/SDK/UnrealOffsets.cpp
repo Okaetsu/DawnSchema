@@ -42,8 +42,15 @@ void Palworld::UnrealOffsets::Initialize()
     PS::Log<LogLevel::Verbose>(STR("Unreal Version set to {}.{}.\n"), Unreal::Version::Major, Unreal::Version::Minor);
 
     auto FNameConstructorAddress = Palworld::SignatureManager::GetSignature("FName::Constructor");
-    FName::ConstructorInternal.assign_address(FNameConstructorAddress);
-    PS::Log<LogLevel::Verbose>(STR("FName::Constructor was assigned address of {}\n"), FNameConstructorAddress);
+    if (FNameConstructorAddress)
+    {
+        FName::ConstructorInternal.assign_address(FNameConstructorAddress);
+        PS::Log<LogLevel::Verbose>(STR("FName::Constructor was assigned address of {}\n"), FNameConstructorAddress);
+    }
+    else
+    {
+        PS::Log<LogLevel::Warning>(STR("FName::Constructor signature was not found; preserving UE4SS provider.\n"));
+    }
 
     auto FNameToStringAddress = Palworld::SignatureManager::GetSignature("FName::ToString_Wchar");
     FName::ToStringInternal.assign_address(FNameToStringAddress);
@@ -91,7 +98,7 @@ void Palworld::UnrealOffsets::InitializeGMalloc()
 
     if (Instruction.mnemonic != ZYDIS_MNEMONIC_MOV)
     {
-        throw std::runtime_error(std::format("Expected MOV instruction after CALL, but found {}", ZydisMnemonicGetString(Instruction.mnemonic)));
+        throw std::runtime_error(fmt::format("Expected MOV instruction after CALL, but found {}", ZydisMnemonicGetString(Instruction.mnemonic)));
     }
 
     if (Instruction.operand_count < 2)
@@ -107,12 +114,12 @@ void Palworld::UnrealOffsets::InitializeGMalloc()
     const auto& MemOp = Operands[1].mem;
     if (MemOp.base != ZYDIS_REGISTER_RIP)
     {
-        throw std::runtime_error(std::format("Unexpected base register. Expected [RIP]."));
+        throw std::runtime_error(fmt::format("Unexpected base register. Expected [RIP]."));
     }
 
     if (!MemOp.disp.has_displacement)
     {
-        throw std::runtime_error(std::format("RIP operand is missing displacement field."));
+        throw std::runtime_error(fmt::format("RIP operand is missing displacement field."));
     }
 
     uint8_t* MovInstructionAddr = StartAddr + Offset;
@@ -129,7 +136,7 @@ void Palworld::UnrealOffsets::ApplyMemberVariableLayout()
 {
     PS::Log<LogLevel::Verbose>(STR("Reading offsets from MemberVariableLayout.ini...\n"));
 
-    auto MemberVariableLayoutFile = fs::path(UE4SSProgram::get_program().get_working_directory()) / "MemberVariableLayout.ini";
+    auto MemberVariableLayoutFile = fs::path(RC::UE4SSProgram::get_program().get_working_directory()) / "MemberVariableLayout.ini";
     if (fs::exists(MemberVariableLayoutFile))
     {
         auto FileBuffer = File::open(MemberVariableLayoutFile);

@@ -102,13 +102,13 @@ namespace Palworld {
         auto Enum = Property->GetEnum();
         if (!Enum)
         {
-            throw std::runtime_error(std::format("EnumProperty {} had an invalid Enum value", PropertyName));
+            throw std::runtime_error(fmt::format("EnumProperty {} had an invalid Enum value", PropertyName));
         }
 
         auto ParsedValue = Value.get<std::string>();
         if (!ParsedValue.contains("::"))
         {
-            ParsedValue = std::format("{}::{}", PropertyType, ParsedValue);
+            ParsedValue = fmt::format("{}::{}", PropertyType, ParsedValue);
         }
 
         auto EnumName = FName(RC::to_generic_string(ParsedValue));
@@ -127,7 +127,7 @@ namespace Palworld {
 
         if (!WasEnumFound)
         {
-            throw std::runtime_error(std::format("Enum '{}' doesn't exist", ParsedValue));
+            throw std::runtime_error(fmt::format("Enum '{}' doesn't exist", ParsedValue));
         }
 
         return EnumValue;
@@ -141,13 +141,13 @@ namespace Palworld {
         auto Enum = Property->GetIntPropertyEnum();
         if (!Enum)
         {
-            throw std::runtime_error(std::format("EnumProperty {} had an invalid Enum value", PropertyName));
+            throw std::runtime_error(fmt::format("EnumProperty {} had an invalid Enum value", PropertyName));
         }
 
         auto ParsedValue = Value.get<std::string>();
         if (!ParsedValue.contains("::"))
         {
-            ParsedValue = std::format("{}::{}", PropertyType, ParsedValue);
+            ParsedValue = fmt::format("{}::{}", PropertyType, ParsedValue);
         }
 
         auto EnumName = FName(RC::to_generic_string(ParsedValue));
@@ -166,7 +166,7 @@ namespace Palworld {
 
         if (!WasEnumFound)
         {
-            throw std::runtime_error(std::format("Enum '{}' doesn't exist", ParsedValue));
+            throw std::runtime_error(fmt::format("Enum '{}' doesn't exist", ParsedValue));
         }
 
         return EnumValue;
@@ -255,7 +255,7 @@ namespace Palworld {
 
         if (!Asset)
         {
-            throw std::runtime_error(std::format("Property {} was supplied an invalid class of {}", PropertyName, StringValue));
+            throw std::runtime_error(fmt::format("Property {} was supplied an invalid class of {}", PropertyName, StringValue));
         }
 
         Property->SetPropertyValue(Data, Asset);
@@ -341,7 +341,7 @@ namespace Palworld {
             SoftObjectPath = SoftObjectPath.erase(0, resourcePrefix.length());
 
             // "/Engine/Transient.PalSchema/Resources/modname/resourcename"
-            SoftObjectPath = std::format(TEXT("/Engine/Transient.PalSchema/Resources/{}"), SoftObjectPath);
+            SoftObjectPath = fmt::format(TEXT("/Engine/Transient.PalSchema/Resources/{}"), SoftObjectPath);
         }
 
         auto SoftObjectPtr = RC::Unreal::FSoftObjectPtr(RC::Unreal::FSoftObjectPath(FString(SoftObjectPath)));
@@ -357,7 +357,7 @@ namespace Palworld {
         auto Struct = Property->GetStruct();
         if (!Struct)
         {
-            throw std::runtime_error(std::format("Failed to get Struct"));
+            throw std::runtime_error(fmt::format("Failed to get Struct"));
         }
 
         FField* Field = Struct->GetChildProperties();
@@ -399,7 +399,7 @@ namespace Palworld {
             {
                 if (!Value.at("Items").is_array())
                 {
-                    throw std::runtime_error(std::format("Field Items must be an array"));
+                    throw std::runtime_error(fmt::format("Field Items must be an array"));
                 }
 
                 auto Items = Value.at("Items").get<nlohmann::json::array_t>();
@@ -476,55 +476,55 @@ namespace Palworld {
 
         if (auto EnumProperty = CastProperty<FEnumProperty>(Property))
         {
-            if (!Value.is_string()) throw std::runtime_error(std::format("Property {} must be a string", PropertyName));
+            if (!Value.is_string()) throw std::runtime_error(fmt::format("Property {} must be a string", PropertyName));
         }
         else if (auto NumProperty = CastProperty<FNumericProperty>(Property))
         {
-            if (!Value.is_number()) throw std::runtime_error(std::format("Property {} must be a number", PropertyName));
+            if (!Value.is_number()) throw std::runtime_error(fmt::format("Property {} must be a number", PropertyName));
         }
         else if (auto BoolProperty = CastProperty<FBoolProperty>(Property))
         {
-            if (!Value.is_boolean()) throw std::runtime_error(std::format("Property {} must be a boolean", PropertyName));
+            if (!Value.is_boolean()) throw std::runtime_error(fmt::format("Property {} must be a boolean", PropertyName));
         }
         else if (auto NameProperty = CastProperty<FNameProperty>(Property))
         {
-            if (!Value.is_string()) throw std::runtime_error(std::format("Property {} must be a string", PropertyName));
+            if (!Value.is_string()) throw std::runtime_error(fmt::format("Property {} must be a string", PropertyName));
         }
         else if (auto StrProperty = CastProperty<FStrProperty>(Property))
         {
-            if (!Value.is_string()) throw std::runtime_error(std::format("Property {} must be a string", PropertyName));
+            if (!Value.is_string()) throw std::runtime_error(fmt::format("Property {} must be a string", PropertyName));
         }
         else if (auto TextProperty = CastProperty<FTextProperty>(Property))
         {
-            if (!Value.is_string()) throw std::runtime_error(std::format("Property {} must be a string", PropertyName));
+            if (!Value.is_string()) throw std::runtime_error(fmt::format("Property {} must be a string", PropertyName));
         }
         else if (auto ClassProperty = CastProperty<FClassProperty>(Property))
         {
-            if (!Value.is_string()) throw std::runtime_error(std::format("Property {} must be a string", PropertyName));
+            if (!Value.is_string()) throw std::runtime_error(fmt::format("Property {} must be a string", PropertyName));
         }
         else if (auto ObjectProperty = CastProperty<FObjectProperty>(Property) && PropertyClassName == STR("ObjectProperty"))
         {
-            if (!Value.is_object() && !Value.is_string()) throw std::runtime_error(std::format("Property {} must be an object or string", PropertyName));
+            if (!Value.is_object() && !Value.is_string()) throw std::runtime_error(fmt::format("Property {} must be an object or string", PropertyName));
         }
         else if (auto SoftObjectProperty = CastProperty<FSoftObjectProperty>(Property) && PropertyClassName == STR("SoftObjectProperty"))
         {
-            if (!Value.is_string()) throw std::runtime_error(std::format("Property {} must be a string", PropertyName));
+            if (!Value.is_string()) throw std::runtime_error(fmt::format("Property {} must be a string", PropertyName));
         }
         else if (auto SoftClassProperty = CastProperty<FSoftClassProperty>(Property) && PropertyClassName == STR("SoftClassProperty"))
         {
-            if (!Value.is_string()) throw std::runtime_error(std::format("Property {} must be a string", PropertyName));
+            if (!Value.is_string()) throw std::runtime_error(fmt::format("Property {} must be a string", PropertyName));
         }
         else if (auto StructProperty = CastProperty<FStructProperty>(Property))
         {
-            if (!Value.is_object()) throw std::runtime_error(std::format("Property {} must be an object", PropertyName));
+            if (!Value.is_object()) throw std::runtime_error(fmt::format("Property {} must be an object", PropertyName));
         }
         else if (auto ArrayProperty = CastProperty<FArrayProperty>(Property))
         {
-            if (!Value.is_object() && !Value.is_array()) throw std::runtime_error(std::format("Property {} must be an object or array", PropertyName));
+            if (!Value.is_object() && !Value.is_array()) throw std::runtime_error(fmt::format("Property {} must be an object or array", PropertyName));
         }
         else if (auto MapProperty = CastProperty<FMapProperty>(Property))
         {
-            if (!Value.is_array()) throw std::runtime_error(std::format("Property {} must be an array of objects", PropertyName));
+            if (!Value.is_array()) throw std::runtime_error(fmt::format("Property {} must be an array of objects", PropertyName));
         }
     }
 

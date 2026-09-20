@@ -68,6 +68,9 @@ namespace Palworld::PropertyHelper {
     std::string GetPropertyTypeAsUTF8String(RC::Unreal::FProperty* Property);
 
     RC::Unreal::FProperty* GetPropertyByName(RC::Unreal::UClass* Class, const RC::StringType& PropertyName);
+    template <RC::Unreal::FFieldDerivative FFieldDerivedType>
+    FFieldDerivedType* CastProperty(RC::Unreal::FField* Field);
+
 
     template <RC::Unreal::FFieldDerivative FFieldDerivedType>
     FFieldDerivedType* GetPropertyByName(RC::Unreal::UClass* Class, const RC::StringType& PropertyName)

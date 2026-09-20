@@ -2,6 +2,7 @@
 
 #include <HAL/Platform.hpp>
 #include <DynamicOutput/DynamicOutput.hpp>
+#include <fmt/format.h>
 #include "Utility/Config.h"
 
 namespace PS {
@@ -10,12 +11,12 @@ namespace PS {
     {
         if (optional_arg == RC::LogLevel::Error)
         {
-            auto formatted_log = std::format(STR("[PalSchema] [error] {}"), content);
+            auto formatted_log = fmt::format(STR("[PalSchema] [error] {}"), content);
             RC::Output::send<optional_arg>(formatted_log, fmt_args...);
         }
         else if (optional_arg == RC::LogLevel::Warning)
         {
-            auto formatted_log = std::format(STR("[PalSchema] [warning] {}"), content);
+            auto formatted_log = fmt::format(STR("[PalSchema] [warning] {}"), content);
             RC::Output::send<optional_arg>(formatted_log, fmt_args...);
         }
         else if (optional_arg == RC::LogLevel::Verbose)
@@ -23,12 +24,12 @@ namespace PS {
             auto config = PS::PSConfig::Get();
             if (!config->IsDebugLoggingEnabled()) return;
 
-            auto formatted_log = std::format(STR("[PalSchema] [debug] {}"), content);
+            auto formatted_log = fmt::format(STR("[PalSchema] [debug] {}"), content);
             RC::Output::send<optional_arg>(formatted_log, fmt_args...);
         }
         else
         {
-            auto formatted_log = std::format(STR("[PalSchema] {}"), content);
+            auto formatted_log = fmt::format(STR("[PalSchema] {}"), content);
             RC::Output::send<optional_arg>(formatted_log, fmt_args...);
         }
     }

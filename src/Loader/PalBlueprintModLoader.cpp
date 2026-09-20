@@ -49,7 +49,7 @@ namespace Palworld {
         }
     }
 
-    void PalBlueprintModLoader::OnAutoReload(const std::filesystem::path::string_type& modName, const std::filesystem::path& modFilePath)
+    void PalBlueprintModLoader::OnAutoReload(const RC::StringType& modName, const std::filesystem::path& modFilePath)
     {
         PS::JsonHelpers::ParseJsonFileInPath(modFilePath, [&](const nlohmann::json& data) {
             LoadUnsafe(data);
@@ -163,8 +163,8 @@ namespace Palworld {
             auto assetNameWide = RC::to_generic_string(assetName);
             if (assetNameWide.starts_with(TEXT("/Game/")))
             {
-                static const std::wregex Pattern(LR"(^(.*/)([^/.]+)$)");
-                assetNameWide = std::regex_replace(assetNameWide, Pattern, TEXT("$1$2.$2_C"));
+                static const std::basic_regex<char16_t> Pattern(uR"(^(.*/)([^/.]+)$)");
+                assetNameWide = std::regex_replace(assetNameWide, Pattern, u"$1$2.$2_C");
 
                 auto softObjectPtr = RC::Unreal::TSoftObjectPtr<UObject>(RC::Unreal::FSoftObjectPath(FString(assetNameWide)));
                 auto asset = UECustom::UKismetSystemLibrary::LoadAsset_Blocking(softObjectPtr);
@@ -274,7 +274,7 @@ namespace Palworld {
             return;
         }
 
-        auto componentFullName = std::format(TEXT("{}_GEN_VARIABLE"), componentName);
+        auto componentFullName = fmt::format(TEXT("{}_GEN_VARIABLE"), componentName);
         UObject* inheritableComponent = nullptr;
 
         auto inheritableComponentHandler = bpClass->GetInheritableComponentHandler();

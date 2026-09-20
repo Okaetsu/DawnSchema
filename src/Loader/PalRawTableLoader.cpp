@@ -249,7 +249,7 @@ namespace Palworld {
     {
         if (!data.is_object())
         {
-            throw std::runtime_error(std::format("Value for {} must be an object", RC::to_string(rowName.ToString())));
+            throw std::runtime_error(fmt::format("Value for {} must be an object", RC::to_string(rowName.ToString())));
         }
 
         auto rowStruct = datatable->GetRowStruct().Get();

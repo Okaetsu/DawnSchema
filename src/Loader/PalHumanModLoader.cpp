@@ -260,32 +260,32 @@ namespace Palworld {
 				continue;
 			}
 
-			auto ItemIdWithSuffix = std::format(STR("ItemId{}"), Index);
+			auto ItemIdWithSuffix = fmt::format(STR("ItemId{}"), Index);
 			auto ItemIdProperty = RowStruct->GetPropertyByName(ItemIdWithSuffix.c_str());
 			if (!ItemIdProperty)
 			{
-				throw std::runtime_error(std::format("Property 'ItemId{}' doesn't exist in DT_PalDropItem, Pal Schema needs an update.", Index));
+				throw std::runtime_error(fmt::format("Property 'ItemId{}' doesn't exist in DT_PalDropItem, Pal Schema needs an update.", Index));
 			}
 
-			auto RateWithSuffix = std::format(STR("Rate{}"), Index);
+			auto RateWithSuffix = fmt::format(STR("Rate{}"), Index);
 			auto RateProperty = RowStruct->GetPropertyByName(RateWithSuffix.c_str());
 			if (!RateProperty)
 			{
-				throw std::runtime_error(std::format("Property 'Rate{}' doesn't exist in DT_PalDropItem, Pal Schema needs an update.", Index));
+				throw std::runtime_error(fmt::format("Property 'Rate{}' doesn't exist in DT_PalDropItem, Pal Schema needs an update.", Index));
 			}
 
-			auto MaxWithSuffix = std::format(STR("Max{}"), Index);
+			auto MaxWithSuffix = fmt::format(STR("Max{}"), Index);
 			auto MaxProperty = RowStruct->GetPropertyByName(MaxWithSuffix.c_str());
 			if (!MaxProperty)
 			{
-				throw std::runtime_error(std::format("Property 'Max{}' doesn't exist in DT_PalDropItem, Pal Schema needs an update.", Index));
+				throw std::runtime_error(fmt::format("Property 'Max{}' doesn't exist in DT_PalDropItem, Pal Schema needs an update.", Index));
 			}
 
-			auto MinWithSuffix = std::format(STR("min{}"), Index);
+			auto MinWithSuffix = fmt::format(STR("min{}"), Index);
 			auto MinProperty = RowStruct->GetPropertyByName(MinWithSuffix.c_str());
 			if (!MinProperty)
 			{
-				throw std::runtime_error(std::format("Property 'min{}' doesn't exist in DT_PalDropItem, Pal Schema needs an update.", Index));
+				throw std::runtime_error(fmt::format("Property 'min{}' doesn't exist in DT_PalDropItem, Pal Schema needs an update.", Index));
 			}
 
 			auto& ItemId = loot.at("ItemId");
@@ -306,7 +306,7 @@ namespace Palworld {
 			}
 		}
 
-		auto RowName = std::format(STR("{}000"), CharacterId.ToString());
+		auto RowName = fmt::format(STR("{}000"), CharacterId.ToString());
 		m_dropItemTable->AddRow(FName(RowName, FNAME_Add), *reinterpret_cast<RC::Unreal::FTableRowBase*>(NpcDropItemData.GetData()));
 	}
 
@@ -315,7 +315,7 @@ namespace Palworld {
 	{
 		if (Data.contains("Name"))
 		{
-			auto FixedCharacterId = std::format(STR("HUMAN_NAME_{}"), CharacterId.ToString());
+			auto FixedCharacterId = fmt::format(STR("HUMAN_NAME_{}"), CharacterId.ToString());
 			auto TranslationRowStruct = m_npcNameTable->GetRowStruct().Get();
 			auto TextProperty = TranslationRowStruct->GetPropertyByName(STR("TextData"));
 			if (TextProperty)
@@ -343,7 +343,7 @@ namespace Palworld {
 	{
 		if (Data.contains("Name"))
 		{
-			auto FixedCharacterId = std::format(STR("HUMAN_NAME_{}"), CharacterId.ToString());
+			auto FixedCharacterId = fmt::format(STR("HUMAN_NAME_{}"), CharacterId.ToString());
 			auto TranslationRowStruct = m_npcNameTable->GetRowStruct().Get();
 			auto TextProperty = TranslationRowStruct->GetPropertyByName(STR("TextData"));
 			if (TextProperty)

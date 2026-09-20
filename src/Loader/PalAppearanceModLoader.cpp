@@ -38,7 +38,7 @@ namespace Palworld {
         });
     }
 
-    void PalAppearanceModLoader::OnAutoReload(const std::filesystem::path::string_type& modName, const std::filesystem::path& modFilePath)
+    void PalAppearanceModLoader::OnAutoReload(const RC::StringType& modName, const std::filesystem::path& modFilePath)
     {
         PS::JsonHelpers::ParseJsonFilesInPath(modFilePath, [&](const nlohmann::json& data) {
             LoadAppearances(data);
@@ -83,12 +83,12 @@ namespace Palworld {
             auto RowId = FName(RC::to_generic_string(Key), FNAME_Add);
             if (!Value.contains("Type"))
             {
-                throw std::runtime_error(std::format("{} had invalid data, property 'Type' must be set to either Hair, Head, Eyes, CharacterPreset or Equipment", Key));
+                throw std::runtime_error(fmt::format("{} had invalid data, property 'Type' must be set to either Hair, Head, Eyes, CharacterPreset or Equipment", Key));
             }
 
             if (!Value.at("Type").is_string())
             {
-                throw std::runtime_error(std::format("{} had invalid data, property 'Type' must be a string", Key));
+                throw std::runtime_error(fmt::format("{} had invalid data, property 'Type' must be a string", Key));
             }
 
             auto Type = Value.at("Type").get<std::string>();
@@ -122,7 +122,7 @@ namespace Palworld {
             }
             else
             {
-                throw std::runtime_error(std::format("Unsupported Type '{}' in {}", Type, Key));
+                throw std::runtime_error(fmt::format("Unsupported Type '{}' in {}", Type, Key));
             }
 
             PS::Log<RC::LogLevel::Normal>(STR("Added new appearance '{}' as '{}'\n"), RowId.ToString(), RC::to_generic_string(Type));
@@ -137,11 +137,11 @@ namespace Palworld {
 		{
 			if (!RowStruct->GetPropertyByName(RC::to_generic_string(RequiredField).c_str()))
 			{
-				throw std::runtime_error(std::format("Property {} has changed name in {}, update is required", RequiredField, RC::to_string(RowStruct->GetName())));
+				throw std::runtime_error(fmt::format("Property {} has changed name in {}, update is required", RequiredField, RC::to_string(RowStruct->GetName())));
 			}
 			if (!Data.contains(RequiredField))
 			{
-				throw std::runtime_error(std::format("Missing required field {} in {}", RequiredField, RC::to_string(RowId.ToString())));
+				throw std::runtime_error(fmt::format("Missing required field {} in {}", RequiredField, RC::to_string(RowId.ToString())));
 			}
 		}
 
@@ -158,7 +158,7 @@ namespace Palworld {
 				}
 				catch (const std::exception& e)
 				{
-					throw std::runtime_error(std::format("{} in {}", e.what(), RC::to_string(RowId.ToString())));
+					throw std::runtime_error(fmt::format("{} in {}", e.what(), RC::to_string(RowId.ToString())));
 				}
 			}
 		}
@@ -172,30 +172,30 @@ namespace Palworld {
 
 		if (!RowStruct->GetPropertyByName(TEXT("IconTexture")))
 		{
-			throw std::runtime_error(std::format("Property IconTexture has changed name in {}, update is required", RC::to_string(RowStruct->GetName())));
+			throw std::runtime_error(fmt::format("Property IconTexture has changed name in {}, update is required", RC::to_string(RowStruct->GetName())));
 		}
 		if (!Data.contains("IconTexture"))
 		{
-			throw std::runtime_error(std::format("Missing required field IconTexture in {}", RC::to_string(PresetId.ToString())));
+			throw std::runtime_error(fmt::format("Missing required field IconTexture in {}", RC::to_string(PresetId.ToString())));
 		}
 		if (!Data.at("IconTexture").is_string())
 		{
-			throw std::runtime_error(std::format("IconTexture field in {} must be a string", RC::to_string(PresetId.ToString())));
+			throw std::runtime_error(fmt::format("IconTexture field in {} must be a string", RC::to_string(PresetId.ToString())));
 		}
 
         FStructProperty* MakeInfoProperty = static_cast<FStructProperty*>(RowStruct->GetPropertyByName(TEXT("MakeInfo")));
 		if (!MakeInfoProperty)
 		{
-			throw std::runtime_error(std::format("Property MakeInfo has changed name in {}, update is required", RC::to_string(RowStruct->GetName())));
+			throw std::runtime_error(fmt::format("Property MakeInfo has changed name in {}, update is required", RC::to_string(RowStruct->GetName())));
 		}
 		if (!Data.contains("MakeInfo"))
 		{
-			throw std::runtime_error(std::format("Missing required field MakeInfo in {}", RC::to_string(PresetId.ToString())));
+			throw std::runtime_error(fmt::format("Missing required field MakeInfo in {}", RC::to_string(PresetId.ToString())));
 		}
         auto& MakeInfoData = Data.at("MakeInfo");
 		if (!MakeInfoData.is_object())
 		{
-			throw std::runtime_error(std::format("MakeInfo field in {} must be an object", RC::to_string(PresetId.ToString())));
+			throw std::runtime_error(fmt::format("MakeInfo field in {} must be an object", RC::to_string(PresetId.ToString())));
 		}
 
         UScriptStruct* MakeInfoStruct = MakeInfoProperty->GetStruct().Get();
@@ -207,11 +207,11 @@ namespace Palworld {
 		{
 			if (!MakeInfoStruct->GetPropertyByName(RC::to_generic_string(RequiredSubField).c_str()))
             {
-                throw std::runtime_error(std::format("Property {} has changed name in MakeInfo, update is required", RequiredSubField));
+                throw std::runtime_error(fmt::format("Property {} has changed name in MakeInfo, update is required", RequiredSubField));
             }
             if (!MakeInfoData.contains(RequiredSubField))
             {
-                throw std::runtime_error(std::format("Missing required field {} in MakeInfo", RequiredSubField));
+                throw std::runtime_error(fmt::format("Missing required field {} in MakeInfo", RequiredSubField));
 			}
 		}
 		
@@ -228,7 +228,7 @@ namespace Palworld {
 				}
 				catch (const std::exception& e)
 				{
-					throw std::runtime_error(std::format("{} in {}", e.what(), RC::to_string(PresetId.ToString())));
+					throw std::runtime_error(fmt::format("{} in {}", e.what(), RC::to_string(PresetId.ToString())));
 				}
 			}
 		}
@@ -255,7 +255,7 @@ namespace Palworld {
 		auto ColorRow = m_colorPresetTable->FindRowUnchecked(ColorPresetId);
 		if (!ColorRow)
 		{
-			throw std::runtime_error(std::format("Unable to find row {} in DT_CharacterCreationColorPresetTable", RC::to_string(Id)));
+			throw std::runtime_error(fmt::format("Unable to find row {} in DT_CharacterCreationColorPresetTable", RC::to_string(Id)));
 		}
 
 		void* ColorsArrayContainer = ColorsArrayProperty->ContainerPtrToValuePtr<void>(ColorRow);
@@ -263,12 +263,12 @@ namespace Palworld {
 
 		if (!Data.contains("Colors"))
 		{
-			throw std::runtime_error(std::format("{} must have a Colors field", RC::to_string(Id)));
+			throw std::runtime_error(fmt::format("{} must have a Colors field", RC::to_string(Id)));
 		}
 
 		if (!Data.at("Colors").is_object())
 		{
-			throw std::runtime_error(std::format("Colors field in {} must be an object", RC::to_string(Id)));
+			throw std::runtime_error(fmt::format("Colors field in {} must be an object", RC::to_string(Id)));
 		}
 
 		PropertyHelper::CopyJsonValueToContainer(ColorRow, ColorsArrayProperty, Data.at("Colors"));

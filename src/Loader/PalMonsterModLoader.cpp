@@ -95,8 +95,8 @@ namespace Palworld {
             return nullptr;
         }
 
-        auto newPackageName = FName(std::format(TEXT("/PalSchema/SpawnItem/BP_Action_SpawnItem_{}"), characterId.ToString()));
-        auto newAssetName = FName(std::format(TEXT("BP_Action_SpawnItem_{}_C"), characterId.ToString()));
+        auto newPackageName = FName(fmt::format(TEXT("/PalSchema/SpawnItem/BP_Action_SpawnItem_{}"), characterId.ToString()));
+        auto newAssetName = FName(fmt::format(TEXT("BP_Action_SpawnItem_{}_C"), characterId.ToString()));
 
         if (auto cachedSpawnItemActionClass = m_cachedSpawnItemActionsByName.Find(newAssetName))
         {
@@ -365,7 +365,7 @@ namespace Palworld {
 			}
 
 			auto NewRow = reinterpret_cast<RC::Unreal::FTableRowBase*>(WazaMasterLevelData);
-			auto NewRowName = std::format(STR("{}{}"), CharacterId.ToString(), Level);
+			auto NewRowName = fmt::format(STR("{}{}"), CharacterId.ToString(), Level);
 
 			m_wazaMasterLevelTable->AddRow(FName(NewRowName, FNAME_Add), *NewRow);
 		}
@@ -441,32 +441,32 @@ namespace Palworld {
 				continue;
 			}
 
-			auto ItemIdWithSuffix = std::format(STR("ItemId{}"), IndexString);
+			auto ItemIdWithSuffix = fmt::format(STR("ItemId{}"), RC::to_generic_string(IndexString));
 			auto ItemIdProperty = RowStruct->GetPropertyByName(ItemIdWithSuffix.c_str());
 			if (!ItemIdProperty)
 			{
-				throw std::runtime_error(std::format("Property 'ItemId{}' doesn't exist in DT_PalDropItem, Pal Schema needs an update.", Index));
+				throw std::runtime_error(fmt::format("Property 'ItemId{}' doesn't exist in DT_PalDropItem, Pal Schema needs an update.", Index));
 			}
 
-			auto RateWithSuffix = std::format(STR("Rate{}"), IndexString);
+			auto RateWithSuffix = fmt::format(STR("Rate{}"), RC::to_generic_string(IndexString));
 			auto RateProperty = RowStruct->GetPropertyByName(RateWithSuffix.c_str());
 			if (!RateProperty)
 			{
-				throw std::runtime_error(std::format("Property 'Rate{}' doesn't exist in DT_PalDropItem, Pal Schema needs an update.", Index));
+				throw std::runtime_error(fmt::format("Property 'Rate{}' doesn't exist in DT_PalDropItem, Pal Schema needs an update.", Index));
 			}
 
-			auto MaxWithSuffix = std::format(STR("Max{}"), IndexString);
+			auto MaxWithSuffix = fmt::format(STR("Max{}"), RC::to_generic_string(IndexString));
 			auto MaxProperty = RowStruct->GetPropertyByName(MaxWithSuffix.c_str());
 			if (!MaxProperty)
 			{
-				throw std::runtime_error(std::format("Property 'Max{}' doesn't exist in DT_PalDropItem, Pal Schema needs an update.", Index));
+				throw std::runtime_error(fmt::format("Property 'Max{}' doesn't exist in DT_PalDropItem, Pal Schema needs an update.", Index));
 			}
 
-			auto MinWithSuffix = std::format(STR("min{}"), IndexString);
+			auto MinWithSuffix = fmt::format(STR("min{}"), RC::to_generic_string(IndexString));
 			auto MinProperty = RowStruct->GetPropertyByName(MinWithSuffix.c_str());
 			if (!MinProperty)
 			{
-				throw std::runtime_error(std::format("Property 'min{}' doesn't exist in DT_PalDropItem, Pal Schema needs an update.", Index));
+				throw std::runtime_error(fmt::format("Property 'min{}' doesn't exist in DT_PalDropItem, Pal Schema needs an update.", Index));
 			}
 
 			auto ItemId = loot.at("ItemId");
@@ -487,7 +487,7 @@ namespace Palworld {
 			}
 		}
 
-		auto RowName = std::format(STR("{}000"), CharacterId.ToString());
+		auto RowName = fmt::format(STR("{}000"), CharacterId.ToString());
 		m_palDropItemTable->AddRow(FName(RowName, FNAME_Add), *reinterpret_cast<RC::Unreal::FTableRowBase*>(PalDropItemData));
 	}
 
@@ -495,7 +495,7 @@ namespace Palworld {
 	{
 		if (Data.contains("Name"))
 		{
-			auto FixedCharacterId = std::format(STR("PAL_NAME_{}"), CharacterId.ToString());
+			auto FixedCharacterId = fmt::format(STR("PAL_NAME_{}"), CharacterId.ToString());
 			auto TranslationRowStruct = m_palNameTable->GetRowStruct().Get();
 			auto TextProperty = TranslationRowStruct->GetPropertyByName(STR("TextData"));
 			if (TextProperty)
@@ -519,7 +519,7 @@ namespace Palworld {
 
 		if (Data.contains("ShortDescription"))
 		{
-			auto FixedCharacterId = std::format(STR("PAL_SHORT_DESC_{}"), CharacterId.ToString());
+			auto FixedCharacterId = fmt::format(STR("PAL_SHORT_DESC_{}"), CharacterId.ToString());
 			auto TranslationRowStruct = m_palShortDescTable->GetRowStruct().Get();
 			auto TextProperty = TranslationRowStruct->GetPropertyByName(STR("TextData"));
 			if (TextProperty)
@@ -543,7 +543,7 @@ namespace Palworld {
 
 		if (Data.contains("LongDescription"))
 		{
-			auto FixedCharacterId = std::format(STR("PAL_LONG_DESC_{}"), CharacterId.ToString());
+			auto FixedCharacterId = fmt::format(STR("PAL_LONG_DESC_{}"), CharacterId.ToString());
 			auto TranslationRowStruct = m_palLongDescTable->GetRowStruct().Get();
 			auto TextProperty = TranslationRowStruct->GetPropertyByName(STR("TextData"));
 			if (TextProperty)
@@ -570,7 +570,7 @@ namespace Palworld {
 	{
 		if (Data.contains("Name"))
 		{
-			auto FixedCharacterId = std::format(STR("PAL_NAME_{}"), CharacterId.ToString());
+			auto FixedCharacterId = fmt::format(STR("PAL_NAME_{}"), CharacterId.ToString());
 			auto TranslationRowStruct = m_palNameTable->GetRowStruct().Get();
 			auto TextProperty = TranslationRowStruct->GetPropertyByName(STR("TextData"));
 			if (TextProperty)
@@ -585,7 +585,7 @@ namespace Palworld {
 
 		if (Data.contains("ShortDescription"))
 		{
-			auto FixedCharacterId = std::format(STR("PAL_SHORT_DESC_{}"), CharacterId.ToString());
+			auto FixedCharacterId = fmt::format(STR("PAL_SHORT_DESC_{}"), CharacterId.ToString());
 			auto TranslationRowStruct = m_palShortDescTable->GetRowStruct().Get();
 			auto TextProperty = TranslationRowStruct->GetPropertyByName(STR("TextData"));
 			if (TextProperty)
@@ -600,7 +600,7 @@ namespace Palworld {
 
 		if (Data.contains("LongDescription"))
 		{
-			auto FixedCharacterId = std::format(STR("PAL_LONG_DESC_{}"), CharacterId.ToString());
+			auto FixedCharacterId = fmt::format(STR("PAL_LONG_DESC_{}"), CharacterId.ToString());
 			auto TranslationRowStruct = m_palLongDescTable->GetRowStruct().Get();
 			auto TextProperty = TranslationRowStruct->GetPropertyByName(STR("TextData"));
 			if (TextProperty)

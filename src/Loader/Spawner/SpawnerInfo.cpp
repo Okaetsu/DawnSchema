@@ -67,11 +67,11 @@ namespace PS {
             return CachedString;    
         }
 
-        RC::StringType location = std::format(TEXT("X: {:.3f}, Y: {:.3f}, Z: {:.3f}"), Location.GetX(), Location.GetY(), Location.GetZ());
+        RC::StringType location = fmt::format(TEXT("X: {:.3f}, Y: {:.3f}, Z: {:.3f}"), Location.GetX(), Location.GetY(), Location.GetZ());
 
         if (Type == SpawnerType::Sheet)
         {
-            CachedString = std::format(TEXT("(Sheet @ [{}] with {} group{})"),
+            CachedString = fmt::format(TEXT("(Sheet @ [{}] with {} group{})"),
                 location,
                 SpawnGroupList.size(),
                 SpawnGroupList.size() > 1 ? TEXT("s") : TEXT(""));
@@ -79,7 +79,7 @@ namespace PS {
         }
 
         RC::StringType npcId = NPCID.ToString();
-        CachedString = std::format(TEXT("({} @ [{}])"), npcId, location);;
+        CachedString = fmt::format(TEXT("({} @ [{}])"), npcId, location);;
         return CachedString;
     }
 

@@ -99,29 +99,29 @@ namespace Palworld {
                 {
                     if (loader->GetModFolderType() == folderType)
                     {
-                        loader->AutoReload(modName, filePath);
-                        PS::Log<LogLevel::Normal>(STR("Auto-reloaded mod {}\n"), modName);
+                        loader->AutoReload(RC::to_generic_string(modName), filePath);
+                        PS::Log<LogLevel::Normal>(STR("Auto-reloaded mod {}\n"), RC::to_generic_string(modName));
                         break;
                     }
                 }
             }
             catch (const std::exception& e)
             {
-                PS::Log<LogLevel::Error>(STR("Failed to auto-reload mod {} - {}\n"), modName, RC::to_generic_string(e.what()));
+                PS::Log<LogLevel::Error>(STR("Failed to auto-reload mod {} - {}\n"), RC::to_generic_string(modName), RC::to_generic_string(e.what()));
             }
         });
     }
 
     void PalMainLoader::IterateModsFolder(const std::function<void(const std::filesystem::path&, const RC::StringType&)>& callback)
     {
-        static auto modsPath = fs::path(UE4SSProgram::get_program().get_working_directory()) / "Mods" / "PalSchema" / "mods";
+        static auto modsPath = fs::path(RC::UE4SSProgram::get_program().get_working_directory()) / "Mods" / "PalSchema" / "mods";
         if (fs::exists(modsPath))
         {
             for (const auto& entry : fs::directory_iterator(modsPath)) {
                 if (entry.is_directory())
                 {
                     auto& path = entry.path();
-                    auto folderName = path.stem().native();
+                    auto folderName = RC::to_generic_string(path.stem().native());
                     callback(entry.path(), folderName);
                 }
             }
@@ -293,7 +293,7 @@ namespace Palworld {
 
     void PalMainLoader::LoadMods(EEngineLifecyclePhase engineLifecyclePhase)
     {
-        IterateModsFolder([&](const fs::path& modPath, const fs::path::string_type& modName)
+        IterateModsFolder([&](const fs::path& modPath, const RC::StringType& modName)
         {
             try
             {
@@ -313,7 +313,7 @@ namespace Palworld {
 
     std::filesystem::path PalMainLoader::GetModsPath()
     {
-        static auto modsPath = fs::path(UE4SSProgram::get_program().get_working_directory()) / "Mods" / "PalSchema" / "mods";
+        static auto modsPath = fs::path(RC::UE4SSProgram::get_program().get_working_directory()) / "Mods" / "PalSchema" / "mods";
         return modsPath;
     }
 
@@ -340,7 +340,7 @@ namespace Palworld {
         PS::Log<LogLevel::Verbose>(STR("Preparing to add extra .pak read directory...\n"));
         auto ModsFolderPath = GetModsPath();
         auto AbsolutePath = ModsFolderPath.native();
-        auto AbsolutePathWithSuffix = std::format(STR("{}/"), RC::to_generic_string(AbsolutePath));
+        auto AbsolutePathWithSuffix = fmt::format(STR("{}/"), RC::to_generic_string(AbsolutePath));
 
         PS::Log<LogLevel::Verbose>(STR("Setting extra .pak read directory to {}\n"), AbsolutePathWithSuffix);
 

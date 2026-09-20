@@ -1,4 +1,5 @@
 #include "Loader/PalModLoaderBase.h"
+#include <Helpers/String.hpp>
 #include "Unreal/Engine/UDataTable.hpp"
 #include "Utility/JsonHelpers.h"
 #include "Utility/Logging.h"
@@ -35,7 +36,7 @@ namespace Palworld {
         OnSetup();
     }
 
-    void PalModLoaderBase::AutoReload(const std::filesystem::path::string_type& modName, const std::filesystem::path& modFilePath)
+    void PalModLoaderBase::AutoReload(const RC::StringType& modName, const std::filesystem::path& modFilePath)
     {
         OnAutoReload(modName, modFilePath);
     }
@@ -92,14 +93,14 @@ namespace Palworld {
 
     void PalModLoaderBase::IterateModsFolder(const std::function<void(const std::filesystem::path&, const RC::StringType&)>& callback)
     {
-        static auto modsPath = fs::path(UE4SSProgram::get_program().get_working_directory()) / "Mods" / "PalSchema" / "mods";
+        static auto modsPath = fs::path(RC::UE4SSProgram::get_program().get_working_directory()) / "Mods" / "PalSchema" / "mods";
         if (fs::exists(modsPath))
         {
             for (const auto& entry : fs::directory_iterator(modsPath)) {
                 if (entry.is_directory())
                 {
                     auto& path = entry.path();
-                    auto folderName = path.stem().native();
+                    auto folderName = RC::to_generic_string(path.stem().native());
                     callback(entry.path(), folderName);
                 }
             }
@@ -120,13 +121,13 @@ namespace Palworld {
     {
         if (!m_datatableRegistry)
         {
-            throw std::runtime_error(std::format("Unable to process 'GetDatatableByName', UDataTableRegistry has not been initialized properly."));
+            throw std::runtime_error(fmt::format("Unable to process 'GetDatatableByName', UDataTableRegistry has not been initialized properly."));
         }
 
         auto datatable = TryGetDatatableByName(name);
         if (!datatable)
         {
-            throw std::runtime_error(std::format("Failed to find UDataTable '{}'", name));
+            throw std::runtime_error(fmt::format("Failed to find UDataTable '{}'", name));
         }
 
         return datatable;
@@ -136,7 +137,7 @@ namespace Palworld {
 
     void PalModLoaderBase::OnLoad(const std::filesystem::path& loaderPath, const RC::StringType& modName, const EEngineLifecyclePhase& engineLifecyclePhase) {}
 
-    void PalModLoaderBase::OnAutoReload(const std::filesystem::path::string_type& modName, const std::filesystem::path& modFilePath) {}
+    void PalModLoaderBase::OnAutoReload(const RC::StringType& modName, const std::filesystem::path& modFilePath) {}
 
     void PalModLoaderBase::PostInitialize() {}
 

@@ -379,7 +379,7 @@ namespace PS::JsonSchemaGenerator {
             };
 
             RawSchemaJson["properties"][DataTableNameNarrow] = {
-                { "$ref", std::format("raw/{}.schema.json", DataTableNameNarrow) }
+                { "$ref", fmt::format("raw/{}.schema.json", DataTableNameNarrow) }
             };
 
             for (FProperty* InnerProperty : TFieldRange<FProperty>(RowStruct, EFieldIterationFlags::None))
@@ -401,7 +401,7 @@ namespace PS::JsonSchemaGenerator {
     {
         PS::Log<LogLevel::Normal>(TEXT("Beginning generation of schema files, please wait a moment...\n"));
 
-        auto SchemaPath = fs::path(UE4SSProgram::get_program().get_working_directory()) / "Mods" / "PalSchema" / "schemas";
+        auto SchemaPath = fs::path(RC::UE4SSProgram::get_program().get_working_directory()) / "Mods" / "PalSchema" / "schemas";
         if (!std::filesystem::exists(SchemaPath))
         {
             std::filesystem::create_directories(SchemaPath);
