@@ -42,8 +42,15 @@ void Palworld::UnrealOffsets::Initialize()
     PS::Log<LogLevel::Verbose>(STR("Unreal Version set to {}.{}.\n"), Unreal::Version::Major, Unreal::Version::Minor);
 
     auto FNameConstructorAddress = Palworld::SignatureManager::GetSignature("FName::Constructor");
-    FName::ConstructorInternal.assign_address(FNameConstructorAddress);
-    PS::Log<LogLevel::Verbose>(STR("FName::Constructor was assigned address of {}\n"), FNameConstructorAddress);
+    if (FNameConstructorAddress)
+    {
+        FName::ConstructorInternal.assign_address(FNameConstructorAddress);
+        PS::Log<LogLevel::Verbose>(STR("FName::Constructor was assigned address of {}\n"), FNameConstructorAddress);
+    }
+    else
+    {
+        PS::Log<LogLevel::Warning>(STR("FName::Constructor signature was not found; preserving UE4SS provider.\n"));
+    }
 
     auto FNameToStringAddress = Palworld::SignatureManager::GetSignature("FName::ToString_Wchar");
     FName::ToStringInternal.assign_address(FNameToStringAddress);
