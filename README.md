@@ -1,12 +1,17 @@
-Indirect fork of PalSchema
+Indirect fork of PalSchema with some changes.
 
 # Installation
 
-In-depth installation guide can be found [here](https://okaetsu.github.io/PalSchema/docs/installation)
+1. Install UE4SS in `steamapps/common/The Blood of Dawnwalker/Dawnwalker/Binaries/Win64`
+2. Install DawnSchema in `steamapps/common/The Blood of Dawnwalker/Dawnwalker/Binaries/Win64/ue4ss/Mods`
+
+DawnSchema mods go in `steamapps/common/The Blood of Dawnwalker/Dawnwalker/Binaries/Win64/ue4ss/Mods/DawnSchema/mods`
 
 # Documentation
 
-Documentation for modders can be found [here](https://okaetsu.github.io/PalSchema/docs/gettingstarted)
+Functionally DawnSchema is slightly different than PalSchema, but you can still use the original docs as a reference for types and raw tables: https://okaetsu.github.io/PalSchema/docs/gettingstarted
+
+The [examples](https://github.com/Okaetsu/DawnSchema/tree/main/assets/examples) folder has some mods you can use as a reference as well.
 
 # Building from Source
 
