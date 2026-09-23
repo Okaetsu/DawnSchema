@@ -1,0 +1,31 @@
+{
+    "/Game/_Dawnwalker/Inventory/Items/ITM_Clothing_FeetCommon6.ITM_Clothing_FeetCommon6": {
+        "Armor_Toughness": 40.0,
+        "ItemName": "Totally not modded boots!",
+        "ItemDescription": "Very cool.",
+        "ItemRarity": "EItemRarityType::Epic",
+        "ItemLevel": 5,
+        "ItemWeight": 0.0,
+        "SellCost": 100,
+        "BuyCost": 200,
+        "ItemImage": "/Game/_Dawnwalker/Inventory/Items/Textures/T_ITM_ClothingFeetCommon3a.T_ITM_ClothingFeetCommon3a",
+        "CustomEffectParameters": [
+            {
+                "Effect": "/Game/_Dawnwalker/Stats/CustomItemModifiers/GE_SwordSkillCooldownMultiplier.GE_SwordSkillCooldownMultiplier_C",
+                "Value": -0.05
+            },
+            {
+                "Effect": "/Game/_Dawnwalker/Stats/CustomItemModifiers/GE_MeleeCriticalHitChanceMultiplier.GE_MeleeCriticalHitChanceMultiplier_C",
+                "Value": 0.05
+            },
+            {
+                "Effect": "/Game/_Dawnwalker/Stats/CustomItemModifiers/GE_SwordCritDamageMultiplier.GE_SwordCritDamageMultiplier_C",
+                "Value": 0.075
+            },
+            {
+                "Effect": "/Game/_Dawnwalker/Stats/CustomItemModifiers/GE_DamageAgainstCorruptedMultiplier.GE_DamageAgainstCorruptedMultiplier_C",
+                "Value": 0.08
+            }
+        ]
+    }
+}

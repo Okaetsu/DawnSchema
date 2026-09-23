@@ -1,10 +1,9 @@
 #include "Misc/FileWatchWrapper.h"
-#include "UE4SSProgram.hpp"
 
 namespace fs = std::filesystem;
 
 namespace PS {
-    FileWatchWrapper::FileWatchWrapper(const std::filesystem::path& path, const FilesystemUpdateCallback& callback)
+    FileWatchWrapper::FileWatchWrapper(const fs::path& path, const FilesystemUpdateCallback& callback)
     {
         m_fileWatcher = std::make_unique<efsw::FileWatcher>();
         m_updateListener = std::make_unique<UpdateListener>();

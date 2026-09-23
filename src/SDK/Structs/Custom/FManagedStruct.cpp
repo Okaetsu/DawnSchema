@@ -6,22 +6,22 @@
 using namespace RC;
 using namespace RC::Unreal;
 
-namespace Palworld {
-    FManagedStruct::FManagedStruct(UScriptStruct* Struct)
+namespace SDK {
+    FManagedStruct::FManagedStruct(UScriptStruct* InStruct)
     {
-        m_struct = Struct;
-        m_data = FMemory::Malloc(Struct->GetStructureSize());
-        Struct->InitializeStruct(m_data);
+        Struct = InStruct;
+        Data = FMemory::Malloc(Struct->GetStructureSize());
+        Struct->InitializeStruct(Data);
     }
 
     FManagedStruct::~FManagedStruct()
     {
-        m_struct->DestroyStruct(m_data);
-        FMemory::Free(m_data);
+        Struct->DestroyStruct(Data);
+        FMemory::Free(Data);
     }
 
     void* FManagedStruct::GetData()
     {
-        return m_data;
+        return Data;
     }
 }

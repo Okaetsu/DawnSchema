@@ -1,0 +1,16 @@
+{
+    "DT_CraftingRecipes": {
+        "ITM_Consumable_Medicaments1": {
+            "Ingredients": [
+                {
+                    "Key": "/Game/_Dawnwalker/Inventory/Items/ITM_Ingredient_Bases1.ITM_Ingredient_Bases1",
+                    "Action": "Remove"
+                },
+                {
+                    "Key": "/Game/_Dawnwalker/Inventory/Items/ITM_Ingredient_Herbs2.ITM_Ingredient_Herbs2",
+                    "Action": "Remove"
+                }
+            ]
+        }
+    }
+}

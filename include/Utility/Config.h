@@ -28,6 +28,6 @@ namespace PS {
         
         void Save();
     private:
-        PSConfigSettings m_settings;
+        PSConfigSettings ConfigSettings;
     };
 }

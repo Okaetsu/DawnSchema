@@ -6,8 +6,8 @@ namespace RC::Unreal {
     class UClass;
 }
 
-namespace Palworld {
-    uintptr_t** GetVTablePtrByClassPath(const RC::StringType& classPath);
-    void* GetVirtualFunctionFromClass(RC::Unreal::UClass* targetClass, size_t offset);
-    void* GetVirtualFunctionFromVTable(uintptr_t** vtable, size_t offset);
+namespace SDK {
+    uintptr_t** GetVTablePtrByClassPath(const RC::StringType& ClassPath);
+    void* GetVirtualFunctionFromClass(RC::Unreal::UClass* TargetClass, size_t Index);
+    void* GetVirtualFunctionFromVTable(uintptr_t** VTable, size_t Index);
 }

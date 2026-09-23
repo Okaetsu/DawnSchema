@@ -13,19 +13,6 @@ namespace RC::Unreal {
 }
 
 namespace PS::JsonHelpers {
-    bool FieldExists(const nlohmann::json& data, const std::string& fieldName);
-    void ValidateFieldExists(const nlohmann::json& data, const std::string& fieldName);
-
-    bool GetString(const nlohmann::json& Data, const std::string& FieldName, RC::Unreal::FString& OutValue);
-
-    void ParseRotator(const nlohmann::json& value, const std::string& fieldName, RC::Unreal::FRotator& outValue);
-    void ParseVector(const nlohmann::json& value, const std::string& fieldName, RC::Unreal::FVector& outValue);
-    void ParseFName(const nlohmann::json& value, const std::string& fieldName, RC::Unreal::FName& outValue);
-    void ParseDouble(const nlohmann::json& value, const std::string& fieldName, double& outValue);
-    void ParseInteger(const nlohmann::json& value, const std::string& fieldName, int& outValue);
-    void ParseUInt8(const nlohmann::json& value, const std::string& fieldName, RC::Unreal::uint8& outValue);
-    void ParseString(const nlohmann::json& value, const std::string& fieldName, std::string& outValue);
-
-    void ParseJsonFileInPath(const std::filesystem::path& path, const std::function<void(const nlohmann::json&)>& callback);
-    void ParseJsonFilesInPath(const std::filesystem::path& path, const std::function<void(const nlohmann::json&)>& callback);
+    void ParseJsonFileInPath(const std::filesystem::path& Path, const std::function<void(const nlohmann::json&)>& Callback);
+    void ParseJsonFilesInPath(const std::filesystem::path& Path, const std::function<void(const nlohmann::json&)>& Callback);
 }

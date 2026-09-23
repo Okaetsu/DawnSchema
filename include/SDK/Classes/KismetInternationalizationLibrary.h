@@ -2,7 +2,7 @@
 
 #include "Unreal/UObject.hpp"
 
-namespace Palworld {
+namespace SDK {
 	class UKismetInternationalizationLibrary : public RC::Unreal::UObject {
 	public:
 		static RC::Unreal::FString GetCurrentLanguage();

@@ -1,14 +1,14 @@
 #include "SDK/Classes/KismetInternationalizationLibrary.h"
-#include "SDK/Classes/Custom/UObjectGlobals.h"
+#include "Unreal/UObjectGlobals.hpp"
 #include "Unreal/UFunction.hpp"
 
 using namespace RC;
 using namespace RC::Unreal;
 
-namespace Palworld {
+namespace SDK {
 	FString UKismetInternationalizationLibrary::GetCurrentLanguage()
 	{
-		static auto Function = UECustom::UObjectGlobals::StaticFindObject<UFunction*>(nullptr, nullptr, TEXT("/Script/Engine.KismetInternationalizationLibrary:GetCurrentLanguage"));
+		static auto Function = UObjectGlobals::StaticFindObject<UFunction*>(nullptr, nullptr, TEXT("/Script/Engine.KismetInternationalizationLibrary:GetCurrentLanguage"));
 
         if (!Function)
         {
@@ -26,7 +26,7 @@ namespace Palworld {
 
 	UKismetInternationalizationLibrary* UKismetInternationalizationLibrary::GetDefaultObj()
 	{
-		static auto Self = UECustom::UObjectGlobals::StaticFindObject<UKismetInternationalizationLibrary*>(nullptr, nullptr, TEXT("/Script/Engine.Default__KismetInternationalizationLibrary"));
+		static auto Self = UObjectGlobals::StaticFindObject<UKismetInternationalizationLibrary*>(nullptr, nullptr, TEXT("/Script/Engine.Default__KismetInternationalizationLibrary"));
 		return Self;
 	}
 }

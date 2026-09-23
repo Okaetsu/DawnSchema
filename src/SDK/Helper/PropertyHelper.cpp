@@ -1,23 +1,17 @@
-#include "Unreal/FProperty.hpp"
-#include "Unreal/Property/FEnumProperty.hpp"
-#include "Unreal/Property/FStrProperty.hpp"
-#include "Unreal/Property/FTextProperty.hpp"
+#include "Unreal/CoreUObject/UObject/FStrProperty.hpp"
 #include "Unreal/CoreUObject/UObject/UnrealType.hpp"
-#include "Unreal/CoreUObject/UObject/Class.hpp"
-#include "Unreal/SoftObjectPtr.hpp"
+#include "Unreal/Property/FEnumProperty.hpp"
+#include "Unreal/Property/FTextProperty.hpp"
 #include "Helpers/Casting.hpp"
-#include "SDK/Classes/KismetSystemLibrary.h"
 #include "SDK/Structs/Custom/FManagedValue.h"
 #include "SDK/Structs/Custom/FScriptMapHelper.h"
-#include "SDK/Structs/Custom/FScriptArrayHelper.h"
 #include "SDK/Helper/PropertyHelper.h"
-#include "SDK/PalSignatures.h"
 #include "Utility/Logging.h"
 
 using namespace RC;
 using namespace RC::Unreal;
 
-namespace Palworld {
+namespace Schema {
     void PropertyHelper::CopyJsonValueToContainer(void* Container, FProperty* Property, const nlohmann::json& Value)
     {
         if (!Property)
@@ -25,66 +19,67 @@ namespace Palworld {
             throw std::runtime_error("A null Property was supplied to PropertyHelper::CopyJsonValueToContainer.");
         }
 
+        ValidateJsonValueType(Property, Value);
+
         auto PropertyName = Property->GetName();
         auto Type = Property->GetCPPType();
         auto Class = Property->GetClass();
         auto ClassName = Class.GetName();
-        auto ValuePtr = Property->ContainerPtrToValuePtr<void>(Container);
 
-        if (auto EnumProperty = CastProperty<FEnumProperty>(Property))
+        if (auto EnumProperty = CastField<FEnumProperty>(Property))
         {
-            SetEnumPropertyValueFromJsonValue(ValuePtr, EnumProperty, Value);
+            SetEnumPropertyValueFromJsonValue(Container, EnumProperty, Value);
         }
-        else if (auto NumProperty = CastProperty<FNumericProperty>(Property))
+        else if (auto NumProperty = CastField<FNumericProperty>(Property))
         {
-            SetNumericPropertyValueFromJsonValue(ValuePtr, NumProperty, Value);
+            SetNumericPropertyValueFromJsonValue(Container, NumProperty, Value);
         }
-        else if (auto BoolProperty = CastProperty<FBoolProperty>(Property))
+        else if (auto BoolProperty = CastField<FBoolProperty>(Property))
         {
-            SetBoolPropertyValueFromJsonValue(ValuePtr, BoolProperty, Value);
+            SetBoolPropertyValueFromJsonValue(Container, BoolProperty, Value);
         }
-        else if (auto NameProperty = CastProperty<FNameProperty>(Property))
+        else if (auto NameProperty = CastField<FNameProperty>(Property))
         {
-            SetNamePropertyValueFromJsonValue(ValuePtr, NameProperty, Value);
+            SetNamePropertyValueFromJsonValue(Container, NameProperty, Value);
         }
-        else if (auto StrProperty = CastProperty<FStrProperty>(Property))
+        else if (auto StrProperty = CastField<FStrProperty>(Property))
         {
-            SetStrPropertyValueFromJsonValue(ValuePtr, StrProperty, Value);
+            SetStrPropertyValueFromJsonValue(Container, StrProperty, Value);
         }
-        else if (auto TextProperty = CastProperty<FTextProperty>(Property))
+        else if (auto TextProperty = CastField<FTextProperty>(Property))
         {
-            SetTextPropertyValueFromJsonValue(ValuePtr, TextProperty, Value);
+            SetTextPropertyValueFromJsonValue(Container, TextProperty, Value);
         }
-        else if (auto ClassProperty = CastProperty<FClassProperty>(Property))
+        else if (auto ClassProperty = CastField<FClassProperty>(Property))
         {
-            SetClassPropertyValueFromJsonValue(ValuePtr, ClassProperty, Value);
+            SetClassPropertyValueFromJsonValue(Container, ClassProperty, Value);
         }
-        else if (CastProperty<FObjectProperty>(Property) && ClassName == STR("ObjectProperty"))
+        else if (CastField<FObjectProperty>(Property) && ClassName == STR("ObjectProperty"))
         {
-            auto ObjectProperty = CastProperty<FObjectProperty>(Property);
+            auto ObjectProperty = CastField<FObjectProperty>(Property);
             SetObjectPropertyValueFromJsonValue(Container, ObjectProperty, Value);
         }
-        else if (CastProperty<FSoftObjectProperty>(Property) && ClassName == STR("SoftObjectProperty"))
+        else if (CastField<FSoftObjectProperty>(Property) && ClassName == STR("SoftObjectProperty"))
         {
-            auto SoftObjectProperty = CastProperty<FSoftObjectProperty>(Property);
-            SetSoftObjectPropertyValueFromJsonValue(ValuePtr, SoftObjectProperty, Value);
+            auto SoftObjectProperty = CastField<FSoftObjectProperty>(Property);
+            SetSoftObjectPropertyValueFromJsonValue(Container, SoftObjectProperty, Value);
         }
-        else if (CastProperty<FSoftClassProperty>(Property) && ClassName == STR("SoftClassProperty"))
+        else if (CastField<FSoftClassProperty>(Property) && ClassName == STR("SoftClassProperty"))
         {
-            auto SoftClassProperty = CastProperty<FSoftClassProperty>(Property);
-            SetSoftClassPropertyValueFromJsonValue(ValuePtr, SoftClassProperty, Value);
+            auto SoftClassProperty = CastField<FSoftClassProperty>(Property);
+            SetSoftClassPropertyValueFromJsonValue(Container, SoftClassProperty, Value);
         }
-        else if (auto StructProperty = CastProperty<FStructProperty>(Property))
+        else if (auto StructProperty = CastField<FStructProperty>(Property))
         {
-            SetStructPropertyValueFromJsonValue(ValuePtr, StructProperty, Value);
+            SetStructPropertyValueFromJsonValue(Container, StructProperty, Value);
         }
-        else if (auto ArrayProperty = CastProperty<FArrayProperty>(Property))
+        else if (auto ArrayProperty = CastField<FArrayProperty>(Property))
         {
-            SetArrayPropertyValueFromJsonValue(ValuePtr, ArrayProperty, Value);
+            SetArrayPropertyValueFromJsonValue(Container, ArrayProperty, Value);
         }
-        else if (auto MapProperty = CastProperty<FMapProperty>(Property))
+        else if (auto MapProperty = CastField<FMapProperty>(Property))
         {
-            SetMapPropertyValueFromJsonValue(ValuePtr, MapProperty, Value);
+            SetMapPropertyValueFromJsonValue(Container, MapProperty, Value);
         }
         else
         {
@@ -94,34 +89,29 @@ namespace Palworld {
 
     int64 PropertyHelper::ParseEnumFromJsonValue(FEnumProperty* Property, const nlohmann::json& Value)
     {
-        auto PropertyName = GetPropertyNameAsUTF8String(Property);
-        auto PropertyType = GetPropertyTypeAsUTF8String(Property);
-
-        ValidateJsonValueType(Property, Value);
-
-        auto Enum = Property->GetEnum();
+        UEnum* Enum = Property->GetEnum();
         if (!Enum)
         {
-            throw std::runtime_error(std::format("EnumProperty {} had an invalid Enum value", PropertyName));
+            throw std::runtime_error(RC::fmt("EnumProperty %s had an invalid Enum value", Property->GetName().c_str()));
         }
 
-        auto ParsedValue = Value.get<std::string>();
+        std::string ParsedValue = Value.get<std::string>();
         if (!ParsedValue.contains("::"))
         {
-            ParsedValue = std::format("{}::{}", PropertyType, ParsedValue);
+            ParsedValue = RC::fmt("%S::%S", *Property->GetCPPType(), ParsedValue.c_str());
         }
 
-        auto EnumName = FName(RC::to_generic_string(ParsedValue));
+        FName EnumName = FName(RC::to_generic_string(ParsedValue));
 
         bool WasEnumFound = false;
         int64_t EnumValue = 0;
 
-        for (const auto& EnumPair : Enum->GetEnumNames())
+        for (const FEnumNamePair& EnumNamePair : Enum->GetEnumNames())
         {
-            if (EnumPair.Key == EnumName)
+            if (EnumNamePair.Key == EnumName)
             {
                 WasEnumFound = true;
-                EnumValue = EnumPair.Value;
+                EnumValue = EnumNamePair.Value;
             }
         }
 
@@ -135,32 +125,29 @@ namespace Palworld {
 
     int64 PropertyHelper::ParseByteFromJsonValue(FNumericProperty* Property, const nlohmann::json& Value)
     {
-        auto PropertyName = GetPropertyNameAsUTF8String(Property);
-        auto PropertyType = GetPropertyTypeAsUTF8String(Property);
-
         auto Enum = Property->GetIntPropertyEnum();
         if (!Enum)
         {
-            throw std::runtime_error(std::format("EnumProperty {} had an invalid Enum value", PropertyName));
+            throw std::runtime_error(RC::fmt("EnumProperty %s had an invalid Enum value", Property->GetName().c_str()));
         }
 
-        auto ParsedValue = Value.get<std::string>();
+        std::string ParsedValue = Value.get<std::string>();
         if (!ParsedValue.contains("::"))
         {
-            ParsedValue = std::format("{}::{}", PropertyType, ParsedValue);
+            ParsedValue = RC::fmt("%S::%S", *Property->GetCPPType(), ParsedValue.c_str());
         }
 
-        auto EnumName = FName(RC::to_generic_string(ParsedValue));
+        FName EnumName = FName(RC::to_generic_string(ParsedValue));
 
         bool WasEnumFound = false;
         int64_t EnumValue = 0;
 
-        for (const auto& EnumPair : Enum->GetEnumNames())
+        for (const FEnumNamePair& EnumNamePair : Enum->GetEnumNames())
         {
-            if (EnumPair.Key == EnumName)
+            if (EnumNamePair.Key == EnumName)
             {
                 WasEnumFound = true;
-                EnumValue = EnumPair.Value;
+                EnumValue = EnumNamePair.Value;
             }
         }
 
@@ -178,13 +165,9 @@ namespace Palworld {
         FMemory::Memcpy(Data, &EnumValue, Property->GetElementSize());
     }
 
-    void PropertyHelper::SetNumericPropertyValueFromJsonValue(void* Data, RC::Unreal::FNumericProperty* Property, const nlohmann::json& Value)
+    void PropertyHelper::SetNumericPropertyValueFromJsonValue(void* Data, FNumericProperty* Property, const nlohmann::json& Value)
     {
         auto PropertyName = GetPropertyNameAsUTF8String(Property);
-        if (!Property->IsEnum())
-        {
-            ValidateJsonValueType(Property, Value);
-        }
 
         if (Property->IsEnum())
         {
@@ -208,68 +191,65 @@ namespace Palworld {
         }
     }
 
-    void PropertyHelper::SetBoolPropertyValueFromJsonValue(void* Data, RC::Unreal::FBoolProperty* Property, const nlohmann::json& Value)
+    void PropertyHelper::SetBoolPropertyValueFromJsonValue(void* Data, FBoolProperty* Property, const nlohmann::json& Value)
     {
-        ValidateJsonValueType(Property, Value);
-
         Property->SetPropertyValue(Data, Value.get<bool>());
     }
 
-    void PropertyHelper::SetNamePropertyValueFromJsonValue(void* Data, RC::Unreal::FNameProperty* Property, const nlohmann::json& Value)
+    void PropertyHelper::SetNamePropertyValueFromJsonValue(void* Data, FNameProperty* Property, const nlohmann::json& Value)
     {
-        ValidateJsonValueType(Property, Value);
-
         auto ParsedValue = Value.get<std::string>();
         auto Name = FName(RC::to_generic_string(ParsedValue), FNAME_Add);
         Property->SetPropertyValue(Data, Name);
     }
 
-    void PropertyHelper::SetStrPropertyValueFromJsonValue(void* Data, RC::Unreal::FStrProperty* Property, const nlohmann::json& Value)
+    void PropertyHelper::SetStrPropertyValueFromJsonValue(void* Data, FStrProperty* Property, const nlohmann::json& Value)
     {
-        ValidateJsonValueType(Property, Value);
-
         auto ParsedValue = Value.get<std::string>();
         auto String = FString(RC::to_generic_string(ParsedValue).c_str());
         Property->SetPropertyValue(Data, String);
     }
 
-    void PropertyHelper::SetTextPropertyValueFromJsonValue(void* Data, RC::Unreal::FTextProperty* Property, const nlohmann::json& Value)
+    void PropertyHelper::SetTextPropertyValueFromJsonValue(void* Data, FTextProperty* Property, const nlohmann::json& Value)
     {
-        ValidateJsonValueType(Property, Value);
-
         auto StringValue = Value.get<std::string>();
         auto Text = FText(RC::to_generic_string(StringValue).c_str());
         Property->SetPropertyValue(Data, Text);
     }
 
-    void PropertyHelper::SetClassPropertyValueFromJsonValue(void* Data, RC::Unreal::FClassProperty* Property, const nlohmann::json& Value)
+    void PropertyHelper::SetClassPropertyValueFromJsonValue(void* Data, FClassProperty* Property, const nlohmann::json& Value)
     {
-        ValidateJsonValueType(Property, Value);
-
         auto PropertyName = GetPropertyNameAsUTF8String(Property);
 
-        auto StringValue = Value.get<std::string>();
-        auto StringValueWide = RC::to_generic_string(StringValue);
-        auto SoftObjectPtr = RC::Unreal::TSoftObjectPtr<UObject>(RC::Unreal::FSoftObjectPath(FString(StringValueWide)));
-        auto Asset = UECustom::UKismetSystemLibrary::LoadAsset_Blocking(SoftObjectPtr);
+        std::string StringValue = Value.get<std::string>();
+        if (!StringValue.ends_with("_C"))
+        {
+            throw std::runtime_error(std::format("ClassProperty path for {} must end with a _C", PropertyName.c_str()));
+        }
+
+        RC::StringType StringValueWide = RC::to_generic_string(StringValue);
+        FSoftObjectPtr SoftObjectPtr = FSoftObjectPtr(FSoftObjectPath(FString(StringValueWide)));
+        UObject* Asset = SoftObjectPtr.LoadSynchronous();
 
         if (!Asset)
         {
             throw std::runtime_error(std::format("Property {} was supplied an invalid class of {}", PropertyName, StringValue));
         }
 
+        Asset->SetRootSet();
+
         Property->SetPropertyValue(Data, Asset);
     }
 
-    void PropertyHelper::SetObjectPropertyValueFromJsonValue(void* Data, RC::Unreal::FObjectProperty* Property, const nlohmann::json& Value)
+    void PropertyHelper::SetObjectPropertyValueFromJsonValue(void* Data, FObjectProperty* Property, const nlohmann::json& Value)
     {
-        ValidateJsonValueType(Property, Value);
-
         if (Value.is_string())
         {
-            auto StringValue = Value.get<std::string>();
-            auto WideStringValue = RC::to_generic_string(StringValue);
-            auto LoadedObject = UECustom::UKismetSystemLibrary::LoadAsset_Blocking(WideStringValue, true);
+            std::string StringValue = Value.get<std::string>();
+            RC::StringType WideStringValue = RC::to_generic_string(StringValue);
+            FSoftObjectPtr SoftObjectPtr = FSoftObjectPtr(FSoftObjectPath(FString(WideStringValue)));
+            auto LoadedObject = SoftObjectPtr.LoadSynchronous();
+
             if (!LoadedObject)
             {
                 throw std::runtime_error(RC::fmt("Unable to apply changes to %S. Asset was invalid.", Property->GetName().c_str()));
@@ -286,7 +266,7 @@ namespace Palworld {
                 );
             }
 
-            *Property->ContainerPtrToValuePtr<UObject*>(Data) = LoadedObject;
+            Property->SetPropertyValue(Data, LoadedObject);
         }
         else if (Value.is_object())
         {
@@ -301,7 +281,7 @@ namespace Palworld {
 
                     if (!ObjectValue_Property)
                     {
-                        ObjectValue_Property = Palworld::PropertyHelper::GetPropertyByName(ObjectValue->GetClassPrivate(), ObjectValue_PropertyName);
+                        ObjectValue_Property = ObjectValue->GetClassPrivate()->GetPropertyByNameInChain(ObjectValue_PropertyName.c_str());
                     }
 
                     if (ObjectValue_Property)
@@ -313,21 +293,21 @@ namespace Palworld {
         }
     }
 
-    void PropertyHelper::SetSoftClassPropertyValueFromJsonValue(void* Data, RC::Unreal::FSoftClassProperty* Property, const nlohmann::json& Value)
+    void PropertyHelper::SetSoftClassPropertyValueFromJsonValue(void* Data, FSoftClassProperty* Property, const nlohmann::json& Value)
     {
-        ValidateJsonValueType(Property, Value);
+        std::string ParsedValue = Value.get<std::string>();
+        if (!ParsedValue.ends_with("_C"))
+        {
+            throw std::runtime_error(RC::fmt("SoftClassProperty path for %S must end with a _C", Property->GetName().c_str()));
+        }
 
-        auto ParsedValue = Value.get<std::string>();
-        auto String = RC::to_generic_string(ParsedValue);
-        if (!String.ends_with(STR("_C"))) String += STR("_C");
-
-        auto SoftClassPtr = RC::Unreal::FSoftObjectPtr(RC::Unreal::FSoftObjectPath(FString(String)));
+        RC::StringType String = RC::to_generic_string(ParsedValue);
+        FSoftObjectPtr SoftClassPtr = FSoftObjectPtr(FSoftObjectPath(FString(String)));
         Property->SetPropertyValue(Data, SoftClassPtr);
     }
 
-    void PropertyHelper::SetSoftObjectPropertyValueFromJsonValue(void* Data, RC::Unreal::FSoftObjectProperty* Property, const nlohmann::json& Value)
+    void PropertyHelper::SetSoftObjectPropertyValueFromJsonValue(void* Data, FSoftObjectProperty* Property, const nlohmann::json& Value)
     {
-        ValidateJsonValueType(Property, Value);
         const std::string resourcePrefix = "$resource/";
 
         auto ParsedValue = Value.get<std::string>();
@@ -340,18 +320,16 @@ namespace Palworld {
             // After:  "modname/resourcename"
             SoftObjectPath = SoftObjectPath.erase(0, resourcePrefix.length());
 
-            // "/Engine/Transient.PalSchema/Resources/modname/resourcename"
-            SoftObjectPath = std::format(TEXT("/Engine/Transient.PalSchema/Resources/{}"), SoftObjectPath);
+            // "/Engine/Transient.DawnSchema/Resources/modname/resourcename"
+            SoftObjectPath = std::format(TEXT("/Engine/Transient.DawnSchema/Resources/{}"), SoftObjectPath);
         }
 
-        auto SoftObjectPtr = RC::Unreal::FSoftObjectPtr(RC::Unreal::FSoftObjectPath(FString(SoftObjectPath)));
+        auto SoftObjectPtr = FSoftObjectPtr(FSoftObjectPath(FString(SoftObjectPath)));
         Property->SetPropertyValue(Data, SoftObjectPtr);
     }
 
-    void PropertyHelper::SetStructPropertyValueFromJsonValue(void* Data, RC::Unreal::FStructProperty* Property, const nlohmann::json& Value)
+    void PropertyHelper::SetStructPropertyValueFromJsonValue(void* Data, FStructProperty* Property, const nlohmann::json& Value)
     {
-        ValidateJsonValueType(Property, Value);
-
         auto ParsedObject = Value.get<nlohmann::json>();
 
         auto Struct = Property->GetStruct();
@@ -360,38 +338,30 @@ namespace Palworld {
             throw std::runtime_error(std::format("Failed to get Struct"));
         }
 
-        FField* Field = Struct->GetChildProperties();
-        while (Field)
+        for (FProperty* FieldProperty : TFieldRange<FProperty>(Struct, EFieldIterationFlags::None))
         {
-            auto FieldName = GetPropertyNameAsUTF8String(static_cast<FProperty*>(Field));
+            auto FieldName = GetPropertyNameAsUTF8String(static_cast<FProperty*>(FieldProperty));
             if (Value.contains(FieldName))
             {
-                CopyJsonValueToContainer(Data, static_cast<FProperty*>(Field), Value.at(FieldName));
+                void* FieldValuePtr = FieldProperty->ContainerPtrToValuePtr<void>(Data);
+                CopyJsonValueToContainer(FieldValuePtr, FieldProperty, Value.at(FieldName));
             }
-
-            Field = GetNextField(Field);
         }
     }
 
-    void PropertyHelper::SetArrayPropertyValueFromJsonValue(void* Data, RC::Unreal::FArrayProperty* Property, const nlohmann::json& Value)
+    void PropertyHelper::SetArrayPropertyValueFromJsonValue(void* Data, FArrayProperty* Property, const nlohmann::json& Value)
     {
-        ValidateJsonValueType(Property, Value);
-
-        auto ParsedValue = Value.get<nlohmann::json>();
-
-        auto ScriptArray = static_cast<FScriptArray*>(Data);
-        auto ScriptArrayHelper = UECustom::FScriptArrayHelper(ScriptArray, Property);
-
-        auto InnerProperty = Property->GetInner();
+        FScriptArrayHelper ArrayHelper(Property, Data);
+        FProperty* InnerProperty = Property->GetInner();
 
         if (Value.is_object())
         {
             if (Value.contains("Action"))
             {
-                auto Action = Value.at("Action").get<std::string>();
+                std::string Action = Value.at("Action").get<std::string>();
                 if (Action == "Clear")
                 {
-                    ScriptArrayHelper.Empty();
+                    ArrayHelper.EmptyValues();
                 }
             }
 
@@ -405,51 +375,42 @@ namespace Palworld {
                 auto Items = Value.at("Items").get<nlohmann::json::array_t>();
                 for (auto& Item : Items)
                 {
-                    UECustom::FManagedValue ValuePtr;
-                    ScriptArrayHelper.InitializeValue(ValuePtr);
-                    CopyJsonValueToContainer(ValuePtr.GetData(), InnerProperty, Item);
-                    ScriptArrayHelper.Add(ValuePtr);
+                    int32 NewIndex = ArrayHelper.AddValue();
+                    uint8* RawPtr = ArrayHelper.GetRawPtr(NewIndex);
+                    CopyJsonValueToContainer(RawPtr, InnerProperty, Item);
                 }
             }
         }
         else if (Value.is_array())
         {
-            ScriptArrayHelper.Empty();
+            ArrayHelper.EmptyValues();
 
             auto Items = Value.get<nlohmann::json::array_t>();
             for (auto& Item : Items)
             {
-                UECustom::FManagedValue ValuePtr;
-                ScriptArrayHelper.InitializeValue(ValuePtr);
-                CopyJsonValueToContainer(ValuePtr.GetData(), InnerProperty, Item);
-                ScriptArrayHelper.Add(ValuePtr);
+                int32 NewIndex = ArrayHelper.AddValue();
+                uint8* RawPtr = ArrayHelper.GetRawPtr(NewIndex);
+                CopyJsonValueToContainer(RawPtr, InnerProperty, Item);
             }
         }
     }
 
-    void PropertyHelper::SetMapPropertyValueFromJsonValue(void* Data, RC::Unreal::FMapProperty* Property, const nlohmann::json& Value)
+    void PropertyHelper::SetMapPropertyValueFromJsonValue(void* Data, FMapProperty* Property, const nlohmann::json& Value)
     {
-        ValidateJsonValueType(Property, Value);
-
         auto ArrayItems = Value.get<std::vector<nlohmann::json>>();
 
-        auto KeyProperty = Property->GetKeyProp();
-        auto ValueProperty = Property->GetValueProp();
+        FProperty* KeyProperty = Property->GetKeyProp();
+        FProperty* ValueProperty = Property->GetValueProp();
 
-        auto MapLayout = FScriptMap::GetScriptLayout(
-            KeyProperty->GetSize(),
-            KeyProperty->GetMinAlignment(),
-            ValueProperty->GetSize(),
-            ValueProperty->GetMinAlignment());
-
-        auto ScriptMap = static_cast<Unreal::FScriptMap*>(Data);
+        FScriptMapLayout MapLayout = Property->GetMapLayout();
+        FScriptMap* ScriptMap = static_cast<FScriptMap*>(Data);
         auto ScriptMapHelper = UECustom::FScriptMapHelper(ScriptMap, MapLayout, KeyProperty, ValueProperty);
 
         for (const auto& Entry : ArrayItems)
         {
-            if (!Entry.contains("Key") || !Entry.contains("Value"))
+            if (!Entry.contains("Key"))
             {
-                throw std::runtime_error("Each TMap entry must have a 'Key' and 'Value' property.");
+                throw std::runtime_error("Missing 'Key' property.");
             }
 
             UECustom::FManagedValue ScopedPair;
@@ -457,8 +418,23 @@ namespace Palworld {
             ScriptMapHelper.InitializePair(ScopedPair);
 
             CopyJsonValueToContainer(ScopedPair.GetData(), KeyProperty, Entry.at("Key"));
-            CopyJsonValueToContainer(ScopedPair.GetData(), ValueProperty, Entry.at("Value"));
 
+            if (Entry.contains("Action") && Entry.at("Action").is_string())
+            {
+                std::string Action = Entry.at("Action").get<std::string>();
+                if (Action == "Remove")
+                {
+                    ScriptMapHelper.Remove(ScopedPair.GetData());
+                    continue;
+                }
+            }
+
+            if (!Entry.contains("Value"))
+            {
+                throw std::runtime_error("Missing 'Value' property.");
+            }
+
+            CopyJsonValueToContainer(static_cast<uint8*>(ScopedPair.GetData()) + MapLayout.ValueOffset, ValueProperty, Entry.at("Value"));
             ScriptMapHelper.Add(ScopedPair);
         }
 
@@ -468,61 +444,61 @@ namespace Palworld {
         });
     }
 
-    void PropertyHelper::ValidateJsonValueType(RC::Unreal::FProperty* Property, const nlohmann::json& Value)
+    void PropertyHelper::ValidateJsonValueType(FProperty* Property, const nlohmann::json& Value)
     {
         auto PropertyName = GetPropertyNameAsUTF8String(Property);
         auto PropertyClass = Property->GetClass();
         auto PropertyClassName = PropertyClass.GetName();
 
-        if (auto EnumProperty = CastProperty<FEnumProperty>(Property))
+        if (auto EnumProperty = CastField<FEnumProperty>(Property))
         {
             if (!Value.is_string()) throw std::runtime_error(std::format("Property {} must be a string", PropertyName));
         }
-        else if (auto NumProperty = CastProperty<FNumericProperty>(Property))
+        else if (auto NumProperty = CastField<FNumericProperty>(Property))
         {
             if (!Value.is_number()) throw std::runtime_error(std::format("Property {} must be a number", PropertyName));
         }
-        else if (auto BoolProperty = CastProperty<FBoolProperty>(Property))
+        else if (auto BoolProperty = CastField<FBoolProperty>(Property))
         {
             if (!Value.is_boolean()) throw std::runtime_error(std::format("Property {} must be a boolean", PropertyName));
         }
-        else if (auto NameProperty = CastProperty<FNameProperty>(Property))
+        else if (auto NameProperty = CastField<FNameProperty>(Property))
         {
             if (!Value.is_string()) throw std::runtime_error(std::format("Property {} must be a string", PropertyName));
         }
-        else if (auto StrProperty = CastProperty<FStrProperty>(Property))
+        else if (auto StrProperty = CastField<FStrProperty>(Property))
         {
             if (!Value.is_string()) throw std::runtime_error(std::format("Property {} must be a string", PropertyName));
         }
-        else if (auto TextProperty = CastProperty<FTextProperty>(Property))
+        else if (auto TextProperty = CastField<FTextProperty>(Property))
         {
             if (!Value.is_string()) throw std::runtime_error(std::format("Property {} must be a string", PropertyName));
         }
-        else if (auto ClassProperty = CastProperty<FClassProperty>(Property))
+        else if (auto ClassProperty = CastField<FClassProperty>(Property))
         {
             if (!Value.is_string()) throw std::runtime_error(std::format("Property {} must be a string", PropertyName));
         }
-        else if (auto ObjectProperty = CastProperty<FObjectProperty>(Property) && PropertyClassName == STR("ObjectProperty"))
+        else if (auto ObjectProperty = CastField<FObjectProperty>(Property) && PropertyClassName == STR("ObjectProperty"))
         {
             if (!Value.is_object() && !Value.is_string()) throw std::runtime_error(std::format("Property {} must be an object or string", PropertyName));
         }
-        else if (auto SoftObjectProperty = CastProperty<FSoftObjectProperty>(Property) && PropertyClassName == STR("SoftObjectProperty"))
+        else if (auto SoftObjectProperty = CastField<FSoftObjectProperty>(Property) && PropertyClassName == STR("SoftObjectProperty"))
         {
             if (!Value.is_string()) throw std::runtime_error(std::format("Property {} must be a string", PropertyName));
         }
-        else if (auto SoftClassProperty = CastProperty<FSoftClassProperty>(Property) && PropertyClassName == STR("SoftClassProperty"))
+        else if (auto SoftClassProperty = CastField<FSoftClassProperty>(Property) && PropertyClassName == STR("SoftClassProperty"))
         {
             if (!Value.is_string()) throw std::runtime_error(std::format("Property {} must be a string", PropertyName));
         }
-        else if (auto StructProperty = CastProperty<FStructProperty>(Property))
+        else if (auto StructProperty = CastField<FStructProperty>(Property))
         {
             if (!Value.is_object()) throw std::runtime_error(std::format("Property {} must be an object", PropertyName));
         }
-        else if (auto ArrayProperty = CastProperty<FArrayProperty>(Property))
+        else if (auto ArrayProperty = CastField<FArrayProperty>(Property))
         {
             if (!Value.is_object() && !Value.is_array()) throw std::runtime_error(std::format("Property {} must be an object or array", PropertyName));
         }
-        else if (auto MapProperty = CastProperty<FMapProperty>(Property))
+        else if (auto MapProperty = CastField<FMapProperty>(Property))
         {
             if (!Value.is_array()) throw std::runtime_error(std::format("Property {} must be an array of objects", PropertyName));
         }
@@ -533,126 +509,5 @@ namespace Palworld {
         auto PropertyName = Property->GetName();
         auto PropertyNameUTF8 = RC::to_string(PropertyName);
         return PropertyNameUTF8;
-    }
-
-    std::string PropertyHelper::GetPropertyTypeAsUTF8String(FProperty* Property)
-    {
-        auto PropertyType = RC::to_string(*Property->GetCPPType());
-        return PropertyType;
-    }
-
-    RC::Unreal::FProperty* PropertyHelper::GetPropertyByName(RC::Unreal::UClass* Class, const RC::StringType& PropertyName)
-    {
-        FProperty* Property = nullptr;
-        for (FProperty* It = Class->GetPropertyLink(); It != nullptr; It = It->GetPropertyLinkNext())
-        {
-            if (It->GetName() == PropertyName)
-            {
-                Property = It;
-            }
-        }
-        return Property;
-    }
-
-    RC::Unreal::FProperty* PropertyHelper::GetPropertyByName(RC::Unreal::UScriptStruct* Struct, const RC::StringType& PropertyName)
-    {
-        FProperty* Property = nullptr;
-        FName PropertyFName = FName(PropertyName, FNAME_Add);
-        for (FProperty* It = Struct->GetPropertyLink(); It != nullptr; It = It->GetPropertyLinkNext())
-        {
-            if (It->GetFName() == PropertyFName)
-            {
-                Property = It;
-            }
-        }
-        return Property;
-    }
-
-    void* PropertyHelper::GetValuePtrByPropertyNameInChain(RC::Unreal::UObject* Instance, const RC::StringType& PropertyName)
-    {
-        if (!Instance)
-        {
-            return nullptr;
-        }
-
-        RC::Unreal::FProperty* Property = PropertyHelper::GetPropertyByName(Instance->GetClassPrivate(), PropertyName);
-        if (!Property)
-        {
-            return nullptr;
-        }
-
-        auto ValuePtr = Property->ContainerPtrToValuePtr<void>(Instance);
-        return ValuePtr;
-    }
-
-    RC::Unreal::FFieldClass* PropertyHelper::FindFieldClassByName(const RC::Unreal::FName& Name)
-    {
-        auto NameToFieldClassMap = GetNameToFieldClassMap();
-        if (!NameToFieldClassMap)
-        {
-            return nullptr;
-        }
-
-        auto FieldClass = NameToFieldClassMap->Find(Name);
-        if (!FieldClass)
-        {
-            return nullptr;
-        }
-
-        return *FieldClass;
-    }
-
-    FFieldClass* PropertyHelper::FindFieldClassByName(const RC::StringType& Name)
-    {
-        auto NewName = FName(Name, FNAME_Add);
-        return FindFieldClassByName(NewName);
-    }
-
-    FField* PropertyHelper::GetNextField(FField* Field)
-    {
-        auto Next = *Helper::Casting::ptr_cast<FField**>(Field, 0x20);
-        return Next;
-    }
-
-    TMap<FName, FFieldClass*>* PropertyHelper::GetNameToFieldClassMap()
-    {
-        using GetNameToFieldClassMap_Signature = TMap<FName, FFieldClass*>*(*)();
-        static GetNameToFieldClassMap_Signature GetNameToFieldClassMap_Internal = nullptr;
-
-        if (!GetNameToFieldClassMap_Internal)
-        {
-            GetNameToFieldClassMap_Internal = reinterpret_cast<GetNameToFieldClassMap_Signature>(
-                Palworld::SignatureManager::GetSignature("FFieldClass::GetNameToFieldClassMap")
-            );
-        }
-
-        if (!GetNameToFieldClassMap_Internal)
-        {
-            PS::Log<LogLevel::Error>(STR("Failed to call FFieldClass::GetNameToFieldClassMap because function address was invalid.\n"));
-            return nullptr;
-        }
-
-        return GetNameToFieldClassMap_Internal();
-    }
-
-    bool PropertyHelper::IsPropertyA(RC::Unreal::FField* Field, RC::Unreal::FFieldClass* FieldClass)
-    {
-        using IsA_Signature = bool(*)(FField*, FFieldClass*);
-        static IsA_Signature IsA_Internal = nullptr;
-
-        if (!IsA_Internal)
-        {
-            IsA_Internal = reinterpret_cast<IsA_Signature>(
-                Palworld::SignatureManager::GetSignature("FField::IsA")
-            );
-        }
-
-        if (!IsA_Internal)
-        {
-            PS::Log<LogLevel::Error>(STR("Failed to call FField::IsA because function address was invalid.\n"));
-            return false;
-        }
-
-        return IsA_Internal(Field, FieldClass);
     }
 }

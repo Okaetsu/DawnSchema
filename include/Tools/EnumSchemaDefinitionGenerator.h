@@ -1,5 +1,5 @@
 #pragma once
 
-namespace Palworld::EnumSchemaDefinitionGenerator {
+namespace SDK::EnumSchemaDefinitionGenerator {
 	void Generate();
 }

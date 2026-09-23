@@ -1,4 +1,4 @@
-#include <filesystem>
+#include <Filesystem>
 #include "Utility/JsonHelpers.h"
 #include "Unreal/Core/HAL/Platform.hpp"
 #include "Unreal/NameTypes.hpp"
@@ -12,170 +12,45 @@ using namespace RC::Unreal;
 namespace fs = std::filesystem;
 
 namespace PS::JsonHelpers {
-    bool FieldExists(const nlohmann::json& data, const std::string& fieldName)
+    void ParseJsonFileInPath(const fs::path& Path, const std::function<void(const nlohmann::json&)>& Callback)
     {
-        return data.contains(fieldName);
-    }
-
-    void ValidateFieldExists(const nlohmann::json& data, const std::string& fieldName)
-    {
-        if (!data.contains(fieldName))
-        {
-            throw std::runtime_error(std::format("Missing a required field of '{}'.", fieldName));
-        }
-    }
-
-    bool GetString(const nlohmann::json& Data, const std::string& FieldName, FString& OutValue)
-    {
-        if (!Data.contains(FieldName))
-        {
-            return false;
-        }
-
-        auto& Field = Data.at(FieldName);
-        if (!Field.is_string())
-        {
-            return false;
-        }
-
-        std::string ParsedValue = Field.get<std::string>();
-        RC::StringType WideString = RC::to_generic_string(ParsedValue);
-        OutValue = FString(WideString);
-
-        return true;
-    }
-
-    void ParseRotator(const nlohmann::json& value, const std::string& fieldName, FRotator& outValue)
-    {
-        auto& field = value.at(fieldName);
-
-        if (!field.is_object() || !field.contains("Pitch") || !field.contains("Yaw") || !field.contains("Roll"))
-        {
-            throw std::runtime_error(std::format("FRotator '{}' must be an object with fields 'Pitch', 'Yaw' and 'Roll'.", fieldName));
-        }
-
-        double pitch, yaw, roll;
-        ParseDouble(field, "Pitch", pitch);
-        ParseDouble(field, "Yaw", yaw);
-        ParseDouble(field, "Roll", roll);
-
-        outValue = FRotator{ pitch, yaw, roll };
-    }
-
-    void ParseVector(const nlohmann::json& value, const std::string& fieldName, FVector& outValue)
-    {
-        auto& field = value.at(fieldName);
-
-        if (!field.is_object() || !field.contains("X") || !field.contains("Y") || !field.contains("Z"))
-        {
-            throw std::runtime_error(std::format("FVector '{}' must be an object with fields 'X', 'Y' and 'Z'.", fieldName));
-        }
-
-        double x, y, z;
-        ParseDouble(field, "X", x);
-        ParseDouble(field, "Y", y);
-        ParseDouble(field, "Z", z);
-
-        outValue = FVector{ x, y, z };
-    }
-
-    void ParseFName(const nlohmann::json& value, const std::string& fieldName, FName& outValue)
-    {
-        std::string parsedString;
-        ParseString(value, fieldName, parsedString);
-
-        auto wideString = RC::to_generic_string(parsedString);
-
-        outValue = FName(wideString, FNAME_Add);
-    }
-
-    void ParseDouble(const nlohmann::json& value, const std::string& fieldName, double& outValue)
-    {
-        auto& field = value.at(fieldName);
-
-        if (!field.is_number_float())
-        {
-            throw std::runtime_error(std::format("Value '{}' must be a floating point number.", fieldName));
-        }
-
-        outValue = field.get<double>();
-    }
-
-    void ParseInteger(const nlohmann::json& value, const std::string& fieldName, int& outValue)
-    {
-        auto& field = value.at(fieldName);
-
-        if (!field.is_number_integer())
-        {
-            throw std::runtime_error(std::format("Value '{}' must be an integer.", fieldName));
-        }
-
-        outValue = field.get<int>();
-    }
-
-    void ParseUInt8(const nlohmann::json& value, const std::string& fieldName, RC::Unreal::uint8& outValue)
-    {
-        auto& field = value.at(fieldName);
-
-        if (!field.is_number_integer())
-        {
-            throw std::runtime_error(std::format("Value '{}' must be an integer.", fieldName));
-        }
-
-        outValue = field.get<RC::Unreal::uint8>();
-    }
-
-    void ParseString(const nlohmann::json& value, const std::string& fieldName, std::string& outValue)
-    {
-        auto& field = value.at(fieldName);
-
-        if (!field.is_string())
-        {
-            throw std::runtime_error(std::format("Value '{}' must be a string.", fieldName));
-        }
-
-        outValue = field.get<std::string>();
-    }
-
-    void ParseJsonFileInPath(const std::filesystem::path& path, const std::function<void(const nlohmann::json&)>& callback)
-    {
-        if (!fs::exists(path))
+        if (!fs::exists(Path))
         {
             return;
         }
 
-        if (path.extension() != ".json" && path.extension() != ".jsonc")
+        if (Path.extension() != ".json" && Path.extension() != ".jsonc")
         {
             return;
         }
 
-        auto ignoreComments = path.extension() == ".jsonc";
-        std::ifstream f(path);
+        auto IgnoreComments = Path.extension() == ".jsonc";
+        std::ifstream FileHandle(Path);
 
-        nlohmann::json data = nlohmann::json::parse(f, nullptr, true, ignoreComments);
-        callback(data);
+        nlohmann::json Data = nlohmann::json::parse(FileHandle, nullptr, true, IgnoreComments);
+        Callback(Data);
     }
 
-    void ParseJsonFilesInPath(const std::filesystem::path& path, const std::function<void(const nlohmann::json&)>& callback)
+    void ParseJsonFilesInPath(const fs::path& Path, const std::function<void(const nlohmann::json&)>& Callback)
     {
-        if (!fs::is_directory(path))
+        if (!fs::is_directory(Path))
         {
             return;
         }
 
-        for (const auto& file : fs::directory_iterator(path))
+        for (const auto& File : fs::directory_iterator(Path))
         {
             try
             {
-                auto filePath = file.path();
-                if (filePath.has_extension())
+                auto FilePath = File.path();
+                if (FilePath.has_extension())
                 {
-                    ParseJsonFileInPath(filePath, callback);
+                    ParseJsonFileInPath(FilePath, Callback);
                 }
             }
             catch (const std::exception& e)
             {
-                throw std::runtime_error(std::format("Failed parsing mod file {} - {}.\n", file.path().string(), e.what()));
+                throw std::runtime_error(std::format("Failed parsing mod file {} - {}.\n", File.path().string(), e.what()));
             }
         }
     }

@@ -5,13 +5,12 @@
 #include "Unreal/UScriptStruct.hpp"
 #include "Helpers/String.hpp"
 #include "SDK/Helper/PropertyHelper.h"
-#include "SDK/Structs/Custom/FScriptArrayHelper.h"
 
 namespace UECustom {
     struct BaseReflectedStruct {
     public:
-        BaseReflectedStruct(RC::Unreal::UScriptStruct* scriptStruct);
-        BaseReflectedStruct(RC::Unreal::UScriptStruct* scriptStruct, void* data);
+        BaseReflectedStruct(RC::Unreal::UScriptStruct* InScriptStruct);
+        BaseReflectedStruct(RC::Unreal::UScriptStruct* InScriptStruct, void* InData);
         virtual ~BaseReflectedStruct();
 
         void DestroyStruct();
@@ -21,54 +20,52 @@ namespace UECustom {
         virtual RC::Unreal::UScriptStruct* StaticStruct() = 0;
     protected:
         template <typename T>
-        void SetPropertyValue(RC::Unreal::FProperty* property, const T& value)
+        void SetPropertyValue(RC::Unreal::FProperty* Property, const T& Value)
         {
-            auto valuePtr = property->ContainerPtrToValuePtr<T>(m_data);
-            *valuePtr = value;
+            auto ValuePtr = Property->ContainerPtrToValuePtr<T>(Data);
+            *ValuePtr = Value;
         }
 
         template <typename T>
-        T GetPropertyValue(RC::Unreal::FProperty* property)
+        T GetPropertyValue(RC::Unreal::FProperty* Property)
         {
-            auto valuePtr = property->ContainerPtrToValuePtr<T>(m_data);
-            return *valuePtr;
+            auto ValuePtr = Property->ContainerPtrToValuePtr<T>(Data);
+            return *ValuePtr;
         }
 
-        // This will return a nullptr if the property doesn't exist.
-        RC::Unreal::FProperty* GetProperty(const RC::StringType& propertyName)
+        // This will return a nullptr if the Property doesn't exist.
+        RC::Unreal::FProperty* GetProperty(const RC::StringType& PropertyName)
         {
-            auto property = Palworld::PropertyHelper::GetPropertyByName(m_scriptStruct, propertyName);
-            if (!property)
+            auto Property = ScriptStruct->GetPropertyByNameInChain(PropertyName.c_str());
+            if (!Property)
             {
                 return nullptr;
             }
 
-            return property;
+            return Property;
         }
 
-        // This will throw an error if the property doesn't exist or if the type didn't match what was supplied.
+        // This will throw an error if the Property doesn't exist or if the type didn't match what was supplied.
         template <RC::Unreal::FFieldDerivative T>
-        T* GetPropertyChecked(const RC::StringType& propertyName)
+        T* GetPropertyChecked(const RC::StringType& PropertyName)
         {
-            auto property = Palworld::PropertyHelper::GetPropertyByName(m_scriptStruct, propertyName);
-            if (!property)
+            auto Property = ScriptStruct->GetPropertyByNameInChain(PropertyName.c_str());
+            if (!Property)
             {
-                throw std::runtime_error(RC::fmt("Property '%S' does not exist in struct '%S'.", propertyName.c_str(), 
-                    m_scriptStruct->GetNamePrivate().ToString().c_str()));
+                throw std::runtime_error(RC::fmt("Property '%S' does not exist in struct '%S'.", PropertyName.c_str(), 
+                    ScriptStruct->GetNamePrivate().ToString().c_str()));
             }
 
-            T* returnValue = RC::Unreal::CastField<T>(property);
-            if (!returnValue)
+            T* ReturnValue = RC::Unreal::CastField<T>(Property);
+            if (!ReturnValue)
             {
-                throw std::runtime_error(RC::fmt("Property '%S' has the wrong type, expected '%S'.", propertyName.c_str(), *property->GetCPPType()));
+                throw std::runtime_error(RC::fmt("Property '%S' has the wrong type, expected '%S'.", PropertyName.c_str(), *Property->GetCPPType()));
             }
 
-            return returnValue;
+            return ReturnValue;
         }
-
-        std::unique_ptr<FScriptArrayHelper> GetArrayPropertyValue(RC::Unreal::FProperty* property);
     private:
-        RC::Unreal::UScriptStruct* m_scriptStruct = nullptr;
-        void* m_data = nullptr;
+        RC::Unreal::UScriptStruct* ScriptStruct = nullptr;
+        void* Data = nullptr;
     };
 }

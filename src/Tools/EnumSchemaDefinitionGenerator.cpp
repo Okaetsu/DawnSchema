@@ -7,7 +7,7 @@
 using namespace RC;
 using namespace RC::Unreal;
 
-namespace Palworld {
+namespace SDK {
 	void EnumSchemaDefinitionGenerator::Generate()
 	{
         std::vector<UObject*> EnumObjects;

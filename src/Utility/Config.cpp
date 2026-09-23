@@ -8,56 +8,56 @@
 namespace fs = std::filesystem;
 
 namespace PS {
-    std::unique_ptr<PSConfig> s_config;
+    std::unique_ptr<PSConfig> GConfig;
 
     PSConfig* PSConfig::Get()
     {
-        if (!s_config)
+        if (!GConfig)
         {
-            s_config = std::make_unique<PSConfig>();
+            GConfig = std::make_unique<PSConfig>();
         }
         
-        return s_config.get();
+        return GConfig.get();
     }
 
     std::string PSConfig::GetLanguageOverride()
     {
-        auto config = Get();
-        return config ? config->m_settings.languageOverride : "";
+        auto Config = Get();
+        return Config ? Config->ConfigSettings.languageOverride : "";
     }
 
     bool PSConfig::IsAutoReloadEnabled()
     {
-        auto config = Get();
-        return config ? config->m_settings.enableAutoReload : false;
+        auto Config = Get();
+        return Config ? Config->ConfigSettings.enableAutoReload : false;
     }
 
     bool PSConfig::IsDebugLoggingEnabled()
     {
-        auto config = Get();
-        return config ? config->m_settings.enableDebugLogging : false;
+        auto Config = Get();
+        return Config ? Config->ConfigSettings.enableDebugLogging : false;
     }
 
     void PSConfig::Load()
     {
-        auto folderPath = GetConfigPath();
-        if (!fs::exists(folderPath))
+        auto FolderPath = GetConfigPath();
+        if (!fs::exists(FolderPath))
         {
-            fs::create_directory(folderPath);
+            fs::create_directory(FolderPath);
         }
 
-        auto configFile = folderPath / "config.json";
-        if (!fs::exists(configFile))
+        auto ConfigFile = FolderPath / "config.json";
+        if (!fs::exists(ConfigFile))
         {
             this->Save();
             PS::Log<RC::LogLevel::Warning>(STR("Config file not found, a new one was generated. Default values will be used.\n"));
             return;
         }
 
-        auto readErrorCode = glz::read_file_json < glz::opts{ .error_on_missing_keys = true } > (m_settings, configFile.string(), std::string{});
-        if (readErrorCode) {
-            std::string errorMessage = glz::format_error(readErrorCode, std::string{});
-            PS::Log<RC::LogLevel::Error>(STR("Error parsing config: {}\n"), RC::to_generic_string(errorMessage));
+        auto ErrorCode = glz::read_file_json < glz::opts{ .error_on_missing_keys = true } > (ConfigSettings, ConfigFile.string(), std::string{});
+        if (ErrorCode) {
+            std::string ErrorMessage = glz::format_error(ErrorCode, std::string{});
+            PS::Log<RC::LogLevel::Error>(STR("Error parsing config: {}\n"), RC::to_generic_string(ErrorMessage));
             this->Save();
             PS::Log<RC::LogLevel::Normal>(STR("Config has been repaired.\n"));
         }
@@ -65,20 +65,20 @@ namespace PS {
         PS::Log<RC::LogLevel::Normal>(STR("Config loaded.\n"));
     }
 
-    std::filesystem::path PSConfig::GetConfigPath()
+    fs::path PSConfig::GetConfigPath()
     {
-        static auto path = fs::path(UE4SSProgram::get_program().get_working_directory()) / "Mods" / "PalSchema" / "config";
-        return path;
+        static auto Path = fs::path(UE4SSProgram::get_program().get_working_directory()) / "Mods" / "DawnSchema" / "config";
+        return Path;
     }
 
     void PSConfig::Save()
     {
-        auto configFile = GetConfigPath() / "config.json";
-        auto writeErrorCode = glz::write_file_json<glz::opts{ .prettify = true }>(m_settings, configFile.string(), std::string{});
-        if (writeErrorCode)
+        auto ConfigFile = GetConfigPath() / "config.json";
+        auto ErrorCode = glz::write_file_json<glz::opts{ .prettify = true }>(ConfigSettings, ConfigFile.string(), std::string{});
+        if (ErrorCode)
         {
-            std::string errorMessage = glz::format_error(writeErrorCode, std::string{});
-            PS::Log<RC::LogLevel::Error>(STR("Failed to write to config: {}\n"), RC::to_generic_string(errorMessage));
+            std::string ErrorMessage = glz::format_error(ErrorCode, std::string{});
+            PS::Log<RC::LogLevel::Error>(STR("Failed to write to config: {}\n"), RC::to_generic_string(ErrorMessage));
         }
     }
 }

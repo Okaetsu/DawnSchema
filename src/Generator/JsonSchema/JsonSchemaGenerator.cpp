@@ -401,7 +401,7 @@ namespace PS::JsonSchemaGenerator {
     {
         PS::Log<LogLevel::Normal>(TEXT("Beginning generation of schema files, please wait a moment...\n"));
 
-        auto SchemaPath = fs::path(UE4SSProgram::get_program().get_working_directory()) / "Mods" / "PalSchema" / "schemas";
+        auto SchemaPath = fs::path(UE4SSProgram::get_program().get_working_directory()) / "Mods" / "DawnSchema" / "schemas";
         if (!std::filesystem::exists(SchemaPath))
         {
             std::filesystem::create_directories(SchemaPath);
